@@ -2,7 +2,7 @@ migrate(
   (app) => {
     let admin
     try {
-      admin = app.findAuthRecordByEmail('_pb_users_auth_', 'patric.martins@adapta.org')
+      admin = app.findAuthRecordByEmail('_pb_users_auth_', 'teste@teste.com')
     } catch (_) {
       return
     }

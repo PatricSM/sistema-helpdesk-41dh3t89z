@@ -4,14 +4,14 @@ migrate(
 
     let adminId
     try {
-      const admin = app.findAuthRecordByEmail('_pb_users_auth_', 'patric.martins@adapta.org')
+      const admin = app.findAuthRecordByEmail('_pb_users_auth_', 'teste@teste.com')
       adminId = admin.id
     } catch (_) {
       const record = new Record(users)
-      record.setEmail('patric.martins@adapta.org')
+      record.setEmail('teste@teste.com')
       record.setPassword('Skip@Pass')
       record.setVerified(true)
-      record.set('name', 'Administrador')
+      record.set('name', 'Teste')
       record.set('role', 'admin')
       app.save(record)
       adminId = record.id
