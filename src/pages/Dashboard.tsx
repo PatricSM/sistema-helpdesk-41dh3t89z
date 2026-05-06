@@ -1,7 +1,16 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { Inbox, Clock, CheckCircle2, AlertTriangle, ArrowRight } from 'lucide-react'
+import {
+  Inbox,
+  Clock,
+  CheckCircle2,
+  AlertTriangle,
+  ArrowRight,
+  LayoutDashboard,
+} from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { PageHeader } from '@/components/PageHeader'
+import { PageTitle } from '@/components/PageTitle'
 import { TicketCard } from '@/components/TicketCard'
 import { TicketDialog } from '@/components/TicketDialog'
 import { getTickets, TicketRecord } from '@/services/tickets'
@@ -68,54 +77,57 @@ export default function Dashboard() {
   const recent = tickets.slice(0, 6)
 
   return (
-    <div className="space-y-6 animate-fade-in">
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+    <>
+      <PageHeader>
+        <PageTitle
+          title="Painel"
+          icon={LayoutDashboard}
+          rightSlot={<TicketDialog categories={categories} />}
+        />
+      </PageHeader>
+      <div className="space-y-6 animate-fade-in p-5">
+        <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
+          {kpis.map((k) => (
+            <Card key={k.label}>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium text-muted-foreground">
+                  {k.label}
+                </CardTitle>
+                <div className={`p-2 rounded-lg ${k.className}`}>
+                  <k.icon className="h-4 w-4" />
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="text-3xl font-bold">{k.value}</div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Painel</h1>
-          <p className="text-muted-foreground mt-1">Visão geral dos seus chamados.</p>
-        </div>
-        <TicketDialog categories={categories} />
-      </div>
-
-      <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
-        {kpis.map((k) => (
-          <Card key={k.label}>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">{k.label}</CardTitle>
-              <div className={`p-2 rounded-lg ${k.className}`}>
-                <k.icon className="h-4 w-4" />
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold">{k.value}</div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
-
-      <div>
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-xl font-semibold tracking-tight">Chamados recentes</h2>
-          <Link
-            to="/tickets"
-            className="text-sm text-primary inline-flex items-center gap-1 hover:gap-2 transition-all"
-          >
-            Ver todos <ArrowRight className="h-4 w-4" />
-          </Link>
-        </div>
-        {recent.length > 0 ? (
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {recent.map((t) => (
-              <TicketCard key={t.id} ticket={t} />
-            ))}
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-xl font-semibold tracking-tight">Chamados recentes</h2>
+            <Link
+              to="/tickets"
+              className="text-sm text-primary inline-flex items-center gap-1 hover:gap-2 transition-all"
+            >
+              Ver todos <ArrowRight className="h-4 w-4" />
+            </Link>
           </div>
-        ) : (
-          <div className="py-12 text-center text-muted-foreground border rounded-lg border-dashed bg-secondary/10">
-            Nenhum chamado ainda. Clique em <span className="font-medium">Novo Chamado</span> para
-            começar.
-          </div>
-        )}
+          {recent.length > 0 ? (
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {recent.map((t) => (
+                <TicketCard key={t.id} ticket={t} />
+              ))}
+            </div>
+          ) : (
+            <div className="py-12 text-center text-muted-foreground border rounded-lg border-dashed bg-secondary/10">
+              Nenhum chamado ainda. Clique em <span className="font-medium">Novo Chamado</span> para
+              começar.
+            </div>
+          )}
+        </div>
       </div>
-    </div>
+    </>
   )
 }

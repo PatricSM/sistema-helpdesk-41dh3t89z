@@ -1,20 +1,13 @@
-import { Outlet } from 'react-router-dom'
-import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar'
-import { AppSidebar } from './AppSidebar'
-import { Header } from './Header'
+import { SidebarStateProvider } from '@/hooks/use-sidebar-state'
+import { useScreenSize } from '@/hooks/use-screen-size'
+import { DesktopLayout } from './DesktopLayout'
+import { MobileLayout } from './MobileLayout'
 
 export default function Layout() {
+  const { isMobileView } = useScreenSize()
   return (
-    <SidebarProvider>
-      <div className="flex min-h-screen w-full bg-background">
-        <AppSidebar />
-        <SidebarInset className="flex flex-col flex-1 overflow-hidden">
-          <Header />
-          <main className="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8">
-            <Outlet />
-          </main>
-        </SidebarInset>
-      </div>
-    </SidebarProvider>
+    <SidebarStateProvider>
+      {isMobileView ? <MobileLayout /> : <DesktopLayout />}
+    </SidebarStateProvider>
   )
 }
