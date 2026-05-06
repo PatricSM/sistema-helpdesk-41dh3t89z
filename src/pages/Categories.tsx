@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Plus, Pencil, Trash, Tag } from 'lucide-react'
+import { Navigate } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
@@ -28,7 +29,6 @@ import {
 import { useToast } from '@/hooks/use-toast'
 import { useRealtime } from '@/hooks/use-realtime'
 import { useAuth } from '@/hooks/use-auth'
-import { Navigate } from 'react-router-dom'
 import {
   getCategories,
   createCategory,
@@ -37,6 +37,8 @@ import {
   CategoryRecord,
 } from '@/services/categories'
 import { extractFieldErrors, getErrorMessage } from '@/lib/pocketbase/errors'
+
+const PRESET_COLORS = ['#3b82f6', '#f59e0b', '#10b981', '#ef4444', '#8b5cf6', '#ec4899', '#6b7280']
 
 function CategoryDialog({
   category,
@@ -48,6 +50,7 @@ function CategoryDialog({
   const [open, setOpen] = useState(false)
   const [name, setName] = useState('')
   const [description, setDescription] = useState('')
+  const [color, setColor] = useState(PRESET_COLORS[0])
   const [errors, setErrors] = useState<Record<string, string>>({})
   const { toast } = useToast()
 
@@ -55,6 +58,7 @@ function CategoryDialog({
     if (open) {
       setName(category?.name || '')
       setDescription(category?.description || '')
+      setColor(category?.color || PRESET_COLORS[0])
       setErrors({})
     }
   }, [open, category])
@@ -64,10 +68,10 @@ function CategoryDialog({
     setErrors({})
     try {
       if (category) {
-        await updateCategory(category.id, { name, description })
+        await updateCategory(category.id, { name, description, color })
         toast({ title: 'Categoria atualizada!' })
       } else {
-        await createCategory({ name, description })
+        await createCategory({ name, description, color })
         toast({ title: 'Categoria criada!' })
       }
       setOpen(false)
@@ -97,7 +101,7 @@ function CategoryDialog({
           <DialogHeader>
             <DialogTitle>{category ? 'Editar categoria' : 'Nova categoria'}</DialogTitle>
             <DialogDescription>
-              Categorias são usadas em chamados e na base de conhecimento.
+              Categorias são compartilhadas entre chamados e base de conhecimento.
             </DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-4">
@@ -122,6 +126,23 @@ function CategoryDialog({
                 rows={2}
                 className="resize-none"
               />
+            </div>
+            <div className="grid gap-2">
+              <Label>Cor</Label>
+              <div className="flex flex-wrap gap-2">
+                {PRESET_COLORS.map((c) => (
+                  <button
+                    key={c}
+                    type="button"
+                    onClick={() => setColor(c)}
+                    className={`h-8 w-8 rounded-full border-2 transition-all ${
+                      color === c ? 'border-foreground scale-110' : 'border-transparent'
+                    }`}
+                    style={{ backgroundColor: c }}
+                    aria-label={`Cor ${c}`}
+                  />
+                ))}
+              </div>
             </div>
           </div>
           <DialogFooter>
@@ -186,7 +207,12 @@ export default function Categories() {
             <Card key={c.id} className="group">
               <CardHeader className="flex flex-row items-start justify-between space-y-0 pb-2">
                 <div className="flex items-center gap-2">
-                  <Tag className="h-4 w-4 text-muted-foreground" />
+                  <div
+                    className="p-2 rounded-md"
+                    style={{ backgroundColor: `${c.color || '#6b7280'}20` }}
+                  >
+                    <Tag className="h-4 w-4" style={{ color: c.color || '#6b7280' }} />
+                  </div>
                   <CardTitle className="text-base">{c.name}</CardTitle>
                 </div>
               </CardHeader>

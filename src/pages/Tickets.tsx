@@ -1,101 +1,134 @@
-import { useEffect, useState } from 'react'
-import { getTickets } from '@/services/tickets'
-import { useRealtime } from '@/hooks/use-realtime'
-import { useAuth } from '@/hooks/use-auth'
+import { useEffect, useMemo, useState } from 'react'
+import { Search } from 'lucide-react'
+import { Input } from '@/components/ui/input'
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table'
-import { Badge } from '@/components/ui/badge'
-import { Link } from 'react-router-dom'
-import { Button } from '@/components/ui/button'
-
-const statusMap: any = {
-  open: { label: 'Aberto', color: 'bg-blue-100 text-blue-800 hover:bg-blue-100' },
-  in_progress: { label: 'Em Andamento', color: 'bg-amber-100 text-amber-800 hover:bg-amber-100' },
-  resolved: { label: 'Resolvido', color: 'bg-green-100 text-green-800 hover:bg-green-100' },
-  closed: { label: 'Fechado', color: 'bg-gray-100 text-gray-800 hover:bg-gray-100' },
-}
-
-const priorityMap: any = {
-  low: { label: 'Baixa', color: 'bg-slate-100 text-slate-800 hover:bg-slate-100' },
-  medium: { label: 'Média', color: 'bg-blue-100 text-blue-800 hover:bg-blue-100' },
-  high: { label: 'Alta', color: 'bg-orange-100 text-orange-800 hover:bg-orange-100' },
-  urgent: { label: 'Urgente', color: 'bg-red-100 text-red-800 hover:bg-red-100' },
-}
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
+import { TicketCard } from '@/components/TicketCard'
+import { TicketDialog } from '@/components/TicketDialog'
+import { getTickets, TicketRecord, TicketStatus, TicketPriority } from '@/services/tickets'
+import { getCategories, CategoryRecord } from '@/services/categories'
+import { useRealtime } from '@/hooks/use-realtime'
 
 export default function Tickets() {
-  const [tickets, setTickets] = useState<any[]>([])
-  const { user } = useAuth()
+  const [tickets, setTickets] = useState<TicketRecord[]>([])
+  const [categories, setCategories] = useState<CategoryRecord[]>([])
+  const [search, setSearch] = useState('')
+  const [statusFilter, setStatusFilter] = useState<TicketStatus | 'all'>('all')
+  const [priorityFilter, setPriorityFilter] = useState<TicketPriority | 'all'>('all')
+  const [categoryFilter, setCategoryFilter] = useState<string>('all')
 
   const loadData = async () => {
-    const filter = user?.role === 'client' ? `requester = "${user.id}"` : ''
-    const res = await getTickets(filter)
-    setTickets(res.items)
+    try {
+      const [items, cats] = await Promise.all([getTickets(), getCategories()])
+      setTickets(items)
+      setCategories(cats)
+    } catch {
+      // handled
+    }
   }
 
   useEffect(() => {
     loadData()
-  }, [user])
+  }, [])
+
   useRealtime('tickets', () => {
     loadData()
   })
 
+  const filtered = useMemo(() => {
+    const q = search.toLowerCase()
+    return tickets.filter((t) => {
+      const matchesSearch =
+        !q ||
+        t.title.toLowerCase().includes(q) ||
+        (t.description || '').toLowerCase().includes(q) ||
+        (t.expand?.requester?.name || '').toLowerCase().includes(q)
+      const matchesStatus = statusFilter === 'all' || t.status === statusFilter
+      const matchesPriority = priorityFilter === 'all' || t.priority === priorityFilter
+      const matchesCategory = categoryFilter === 'all' || t.category === categoryFilter
+      return matchesSearch && matchesStatus && matchesPriority && matchesCategory
+    })
+  }, [tickets, search, statusFilter, priorityFilter, categoryFilter])
+
   return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Chamados</h1>
-        <Button asChild>
-          <Link to="/tickets/new">Novo Chamado</Link>
-        </Button>
+    <div className="space-y-6 animate-fade-in">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">Chamados</h1>
+          <p className="text-muted-foreground mt-1">Gerencie todos os chamados.</p>
+        </div>
+        <TicketDialog categories={categories} />
       </div>
-      <div className="rounded-md border bg-card">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>ID</TableHead>
-              <TableHead>Título</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead>Prioridade</TableHead>
-              <TableHead>Criado em</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {tickets.length === 0 ? (
-              <TableRow>
-                <TableCell colSpan={5} className="text-center py-6 text-muted-foreground">
-                  Nenhum chamado encontrado.
-                </TableCell>
-              </TableRow>
-            ) : (
-              tickets.map((t) => (
-                <TableRow key={t.id}>
-                  <TableCell className="font-medium text-xs">{t.id.slice(0, 8)}</TableCell>
-                  <TableCell>
-                    <Link to={`/tickets/${t.id}`} className="hover:underline">
-                      {t.title}
-                    </Link>
-                  </TableCell>
-                  <TableCell>
-                    <Badge variant="secondary" className={statusMap[t.status]?.color}>
-                      {statusMap[t.status]?.label}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>
-                    <Badge variant="secondary" className={priorityMap[t.priority]?.color}>
-                      {priorityMap[t.priority]?.label}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>{new Date(t.created).toLocaleDateString('pt-BR')}</TableCell>
-                </TableRow>
-              ))
-            )}
-          </TableBody>
-        </Table>
+
+      <div className="grid gap-3 md:grid-cols-[1fr_auto_auto_auto]">
+        <div className="relative">
+          <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+          <Input
+            type="search"
+            placeholder="Buscar por título, descrição ou solicitante..."
+            className="pl-9 bg-secondary/30 focus-visible:bg-background"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
+        </div>
+        <Select
+          value={statusFilter}
+          onValueChange={(v) => setStatusFilter(v as TicketStatus | 'all')}
+        >
+          <SelectTrigger className="w-full md:w-[160px]">
+            <SelectValue placeholder="Status" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Todos os status</SelectItem>
+            <SelectItem value="open">Aberto</SelectItem>
+            <SelectItem value="in_progress">Em andamento</SelectItem>
+            <SelectItem value="resolved">Resolvido</SelectItem>
+            <SelectItem value="closed">Fechado</SelectItem>
+          </SelectContent>
+        </Select>
+        <Select
+          value={priorityFilter}
+          onValueChange={(v) => setPriorityFilter(v as TicketPriority | 'all')}
+        >
+          <SelectTrigger className="w-full md:w-[160px]">
+            <SelectValue placeholder="Prioridade" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Todas as prioridades</SelectItem>
+            <SelectItem value="low">Baixa</SelectItem>
+            <SelectItem value="medium">Média</SelectItem>
+            <SelectItem value="high">Alta</SelectItem>
+            <SelectItem value="urgent">Urgente</SelectItem>
+          </SelectContent>
+        </Select>
+        <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+          <SelectTrigger className="w-full md:w-[180px]">
+            <SelectValue placeholder="Categoria" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Todas as categorias</SelectItem>
+            {categories.map((c) => (
+              <SelectItem key={c.id} value={c.id}>
+                {c.name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+        {filtered.length > 0 ? (
+          filtered.map((t) => <TicketCard key={t.id} ticket={t} />)
+        ) : (
+          <div className="col-span-full py-12 text-center text-muted-foreground border rounded-lg border-dashed bg-secondary/10">
+            Nenhum chamado encontrado com esses filtros.
+          </div>
+        )}
       </div>
     </div>
   )
