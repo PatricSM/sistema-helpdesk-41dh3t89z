@@ -2,14 +2,14 @@
 
 /**
  * Hooks da coleção tickets:
- * - onRecordBeforeCreateRequest: aplica SLA policy (sla_response_due / sla_resolution_due)
- * - onRecordAfterCreateRequest: aplica assignment rules + notifica assignee
- * - onRecordBeforeUpdateRequest: detecta mudança de assignee/status para snapshots
- * - onRecordAfterUpdateRequest: notifica assignee/requester sobre mudanças
+ * - onRecordCreate: aplica SLA policy (sla_response_due / sla_resolution_due)
+ * - onRecordAfterCreateSuccess: aplica assignment rules + notifica assignee
+ * - onRecordUpdate: detecta mudança de assignee/status para snapshots
+ * - onRecordAfterUpdateSuccess: notifica assignee/requester sobre mudanças
  */
 
-onRecordBeforeCreateRequest((e) => {
-  const helpers = require(`${__hooks}/_helpers.pb.js`)
+onRecordCreate((e) => {
+  const helpers = require(`${__hooks}/_helpers.js`)
   const ticket = e.record
 
   const priority = ticket.get('priority')
@@ -18,12 +18,15 @@ onRecordBeforeCreateRequest((e) => {
     if (policy) {
       const responseMin = policy.get('response_time_min')
       const resolutionMin = policy.get('resolution_time_min')
-      const now = new Date().toISOString()
-      if (responseMin && !ticket.get('sla_response_due')) {
-        ticket.set('sla_response_due', helpers.addMinutesIso(now, responseMin))
-      }
-      if (resolutionMin && !ticket.get('sla_resolution_due')) {
-        ticket.set('sla_resolution_due', helpers.addMinutesIso(now, resolutionMin))
+      try {
+        if (responseMin) {
+          ticket.set('sla_response_due', helpers.addMinutesIso(null, responseMin))
+        }
+        if (resolutionMin) {
+          ticket.set('sla_resolution_due', helpers.addMinutesIso(null, resolutionMin))
+        }
+      } catch (err) {
+        console.error('[ticket sla] failed to set due dates:', err)
       }
     }
   }
@@ -31,8 +34,8 @@ onRecordBeforeCreateRequest((e) => {
   e.next()
 }, 'tickets')
 
-onRecordAfterCreateRequest((e) => {
-  const helpers = require(`${__hooks}/_helpers.pb.js`)
+onRecordAfterCreateSuccess((e) => {
+  const helpers = require(`${__hooks}/_helpers.js`)
   const ticket = e.record
 
   // Aplicar regra de assignment (se nenhum assignee já estiver definido)
@@ -78,15 +81,15 @@ onRecordAfterCreateRequest((e) => {
   e.next()
 }, 'tickets')
 
-onRecordBeforeUpdateRequest((e) => {
+onRecordUpdate((e) => {
   const ticket = e.record
   // Snapshot dos campos antigos via originalCopy() — disponível em onAfter
   // através de e.record.original() se necessário.
   e.next()
 }, 'tickets')
 
-onRecordAfterUpdateRequest((e) => {
-  const helpers = require(`${__hooks}/_helpers.pb.js`)
+onRecordAfterUpdateSuccess((e) => {
+  const helpers = require(`${__hooks}/_helpers.js`)
   const ticket = e.record
   const original = ticket.original()
   if (!original) {
@@ -129,13 +132,17 @@ onRecordAfterUpdateRequest((e) => {
     })
   }
 
-  // Quando muda para resolved, marcar resolution_at se ainda não tem
-  if (newStatus === 'resolved' && oldStatus !== 'resolved' && !ticket.get('resolution_at')) {
-    try {
-      ticket.set('resolution_at', new Date().toISOString())
-      $app.save(ticket)
-    } catch (err) {
-      console.error('failed to set resolution_at:', err)
+  // Quando muda para resolved, marcar resolution_at
+  // (PB date fields retornam objeto truthy mesmo vazio; checamos via String())
+  if (newStatus === 'resolved' && oldStatus !== 'resolved') {
+    const cur = String(ticket.get('resolution_at') || '').trim()
+    if (!cur) {
+      try {
+        ticket.set('resolution_at', new Date().toISOString())
+        $app.save(ticket)
+      } catch (err) {
+        console.error('failed to set resolution_at:', err)
+      }
     }
   }
 

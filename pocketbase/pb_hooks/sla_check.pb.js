@@ -10,7 +10,7 @@
  */
 
 cronAdd('slaBreachCheck', '*/15 * * * *', () => {
-  const helpers = require(`${__hooks}/_helpers.pb.js`)
+  const helpers = require(`${__hooks}/_helpers.js`)
   const nowIso = new Date().toISOString()
 
   let responseBreaches = 0

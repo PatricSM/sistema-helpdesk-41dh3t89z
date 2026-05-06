@@ -156,14 +156,6 @@
           "collectionRef": "users"
         },
         {
-          "name": "vector",
-          "type": "vector",
-          "required": false,
-          "system": false,
-          "vectorDimensions": 1536,
-          "vectorDistance": "l2"
-        },
-        {
           "name": "created",
           "type": "autodate",
           "required": false,
@@ -270,14 +262,6 @@
           "required": false,
           "system": false,
           "collectionRef": "users"
-        },
-        {
-          "name": "vector",
-          "type": "vector",
-          "required": false,
-          "system": false,
-          "vectorDimensions": 1536,
-          "vectorDistance": "l2"
         },
         {
           "name": "created",
