@@ -53,9 +53,9 @@ const COLOR_MAP: Record<string, { bg: string; text: string; bullet: string; bord
     border: 'border-violet-200',
   },
   gray: {
-    bg: 'bg-gray-100',
+    bg: 'bg-gray-50',
     text: 'text-gray-700',
-    bullet: 'bg-gray-500',
+    bullet: 'bg-gray-400',
     border: 'border-gray-200',
   },
 }

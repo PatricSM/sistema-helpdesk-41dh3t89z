@@ -18,10 +18,9 @@ export function SettingsCustomActions() {
               <Sparkles className="h-4 w-4" /> Não implementado
             </h3>
             <p className="text-sm text-gray-600">
-              No Frappe original, administradores podem cadastrar `HD Form Script` (Python no
-              servidor) e `Custom Actions` (botões na barra do chamado) que executam lógica
-              arbitrária. Em PocketBase isso seria equivalente a JS hooks ou edge functions — fora
-              do escopo desta primeira versão.
+              Esta seção permitiria cadastrar scripts e botões customizados que executam lógica
+              arbitrária na barra do chamado. Em PocketBase, isso pode ser implementado via JS hooks
+              server-side ou edge functions — fora do escopo desta primeira versão.
             </p>
             <p className="text-xs text-gray-500 italic">
               Como evoluir: criar coleção <code>custom_actions</code> com{' '}

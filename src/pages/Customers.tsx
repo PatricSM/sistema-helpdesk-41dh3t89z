@@ -303,7 +303,7 @@ export default function Customers() {
         rowCount={filtered.length}
       />
 
-      <div className="px-5 py-2">
+      <div className="px-0">
         <ListView
           columns={columns}
           rows={filtered}

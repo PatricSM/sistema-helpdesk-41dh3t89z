@@ -272,7 +272,7 @@ export default function KnowledgeBase() {
             onFilterChange={(k, v) => setFilterValues({ ...filterValues, [k]: v })}
             rowCount={filtered.length}
           />
-          <div className="px-5 py-2 flex-1">
+          <div className="px-0 flex-1">
             <ListView
               columns={columns}
               rows={filtered}
@@ -312,22 +312,21 @@ function CategoryFolder({
 }) {
   return (
     <Card
-      className="hover:shadow-md transition-all hover:-translate-y-0.5 cursor-pointer group"
+      className="border-gray-200 shadow-none hover:border-gray-300 cursor-pointer transition-colors group"
       onClick={onClick}
     >
       <CardContent className="p-4">
         <div className="flex items-start justify-between mb-3">
-          <div
-            className="h-10 w-10 rounded-lg flex items-center justify-center"
-            style={{ backgroundColor: `${category.color || '#6b7280'}20` }}
-          >
-            <Folder className="h-5 w-5" style={{ color: category.color || '#6b7280' }} />
-          </div>
-          <ArrowRight className="h-4 w-4 text-gray-400 group-hover:text-gray-700 transition-colors" />
+          <Folder
+            className="h-5 w-5"
+            style={{ color: category.color || '#6b7280' }}
+            strokeWidth={1.5}
+          />
+          <ArrowRight className="h-3.5 w-3.5 text-gray-300 group-hover:text-gray-700 transition-colors" />
         </div>
-        <h3 className="font-semibold text-sm truncate">{category.name}</h3>
+        <h3 className="font-medium text-sm text-gray-900 truncate">{category.name}</h3>
         <p className="text-xs text-gray-500 mt-0.5">
-          {count} artigo{count !== 1 ? 's' : ''}
+          {count} {count === 1 ? 'artigo' : 'artigos'}
         </p>
       </CardContent>
     </Card>

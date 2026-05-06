@@ -24,9 +24,8 @@ export default function CallLogs() {
                 telefonia.
               </p>
               <p className="text-xs text-gray-500">
-                Esta tela existe como placeholder para manter paridade com o Frappe Helpdesk
-                original. As chamadas seriam armazenadas em uma coleção <code>call_logs</code>{' '}
-                vinculada a chamados e contatos.
+                Esta tela é um placeholder. Quando habilitada, as chamadas seriam armazenadas em uma
+                coleção <code>call_logs</code> vinculada a chamados e contatos.
               </p>
             </div>
           </CardContent>

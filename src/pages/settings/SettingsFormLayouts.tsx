@@ -18,11 +18,10 @@ export function SettingsFormLayouts() {
               <LayoutTemplate className="h-4 w-4" /> Não implementado
             </h3>
             <p className="text-sm text-gray-600">
-              No Frappe original (`HD Form Layout` doctype), administradores podem reordenar seções,
-              esconder campos e adicionar campos customizados. Como nosso modelo é fixo
-              (TicketDialog/CreateTicket têm campos hardcoded), essa customização teria que evoluir
-              a coleção <code>tickets</code> para campos dinâmicos via JSON e o dialog para
-              renderização data-driven.
+              Permitiria reordenar seções, esconder campos e adicionar campos customizados ao
+              formulário de chamado. Como nosso modelo atual tem campos fixos (TicketDialog), essa
+              customização requer evoluir a coleção <code>tickets</code> para campos dinâmicos via
+              JSON e o dialog para renderização data-driven.
             </p>
             <p className="text-xs text-gray-500 italic">
               Sugestão de evolução: criar coleção <code>form_layouts</code> com{' '}
