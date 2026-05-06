@@ -121,27 +121,28 @@ export default function Settings() {
         <PageTitle title="Configurações" icon={SettingsIcon} />
       </PageHeader>
 
-      <div className="flex h-[calc(100vh-3.5rem)] overflow-hidden">
-        {/* Sidebar de tabs estilo Frappe Settings */}
-        <aside className="w-56 shrink-0 bg-gray-50 border-r overflow-y-auto p-1">
+      <div className="flex h-[calc(100vh-3rem)] overflow-hidden">
+        <aside className="w-56 shrink-0 border-r border-gray-200 bg-white overflow-y-auto py-4 px-2">
           {Object.entries(grouped).map(([group, items]) => (
-            <div key={group} className="mb-3">
-              <h3 className="h-7 px-2 py-[7px] my-[3px] flex items-center text-xs font-medium text-gray-500 uppercase tracking-wide">
+            <div key={group} className="mb-4">
+              <h3 className="px-2 mb-1.5 text-[11px] font-medium text-gray-400 uppercase tracking-wider">
                 {group}
               </h3>
-              <nav className="space-y-[2px]">
+              <nav className="space-y-0.5">
                 {items.map((t) => (
                   <button
                     key={t.key}
                     type="button"
                     onClick={() => setActiveKey(t.key)}
                     className={cn(
-                      'flex h-7 w-full items-center gap-2 rounded px-2 py-[7px] text-left',
-                      activeKey === t.key ? 'bg-white shadow-sm' : 'hover:bg-gray-100',
+                      'flex h-8 w-full items-center gap-2 rounded-md px-2 text-left transition-colors',
+                      activeKey === t.key
+                        ? 'bg-gray-100 text-gray-900 font-medium'
+                        : 'text-gray-700 hover:bg-gray-50',
                     )}
                   >
-                    <t.icon className="h-4 w-4 text-gray-700 shrink-0" />
-                    <span className="text-sm text-gray-800 truncate">{t.label}</span>
+                    <t.icon className="h-4 w-4 shrink-0" strokeWidth={1.75} />
+                    <span className="text-sm truncate">{t.label}</span>
                   </button>
                 ))}
               </nav>

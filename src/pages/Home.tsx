@@ -7,10 +7,8 @@ import {
   CheckCircle2,
   AlertTriangle,
   ArrowRight,
-  TrendingUp,
-  ThumbsUp,
 } from 'lucide-react'
-import { Card, CardContent, CardHeader } from '@/components/ui/card'
+import { Card, CardContent } from '@/components/ui/card'
 import { PageHeader } from '@/components/PageHeader'
 import { PageTitle } from '@/components/PageTitle'
 import { Pill } from '@/components/Pill'
@@ -46,33 +44,20 @@ const formatRelative = (iso: string) => {
 interface KpiCardProps {
   label: string
   value: string | number
-  trend?: string
-  trendUp?: boolean
   icon: React.ComponentType<{ className?: string }>
-  iconClass: string
+  hint?: string
 }
 
-function KpiCard({ label, value, trend, trendUp, icon: Icon, iconClass }: KpiCardProps) {
+function KpiCard({ label, value, icon: Icon, hint }: KpiCardProps) {
   return (
-    <Card>
+    <Card className="border-gray-200 shadow-none">
       <CardContent className="p-4">
-        <div className="flex items-start justify-between mb-3">
-          <div className={`h-10 w-10 rounded-lg flex items-center justify-center ${iconClass}`}>
-            <Icon className="h-5 w-5" />
-          </div>
-          {trend && (
-            <div
-              className={`text-xs font-medium inline-flex items-center gap-1 ${
-                trendUp ? 'text-emerald-600' : 'text-rose-600'
-              }`}
-            >
-              <TrendingUp className={`h-3 w-3 ${!trendUp && 'rotate-180'}`} />
-              {trend}
-            </div>
-          )}
+        <div className="flex items-center justify-between mb-3">
+          <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">{label}</p>
+          <Icon className="h-4 w-4 text-gray-400" strokeWidth={1.75} />
         </div>
-        <p className="text-xs text-gray-500 mb-1">{label}</p>
-        <p className="text-2xl font-semibold tracking-tight">{value}</p>
+        <p className="text-2xl font-semibold tracking-tight text-gray-900">{value}</p>
+        {hint && <p className="text-xs text-gray-500 mt-1">{hint}</p>}
       </CardContent>
     </Card>
   )
@@ -102,7 +87,7 @@ export default function Home() {
       tickets
         .filter((t) => t.status === 'open' || t.status === 'in_progress')
         .sort((a, b) => (a.created < b.created ? 1 : -1))
-        .slice(0, 5),
+        .slice(0, 6),
     [tickets],
   )
 
@@ -116,7 +101,6 @@ export default function Home() {
     }
   }, [tickets, myTickets])
 
-  // Avg first response time (mocked: usa created -> first_response_at)
   const avgFirstResponse = useMemo(() => {
     const responded = tickets.filter((t) => t.first_response_at)
     if (responded.length === 0) return '—'
@@ -129,7 +113,6 @@ export default function Home() {
     return `${Math.floor(avgMins / 60)}h ${avgMins % 60}min`
   }, [tickets])
 
-  // Chart simples: ticktes criados por dia (últimos 7 dias)
   const last7Days = useMemo(() => {
     const days: { day: string; count: number; resolved: number }[] = []
     for (let i = 6; i >= 0; i--) {
@@ -152,122 +135,109 @@ export default function Home() {
         <PageTitle title="Início" icon={HomeIcon} />
       </PageHeader>
 
-      <div className="px-5 py-5 space-y-5">
+      <div className="px-6 py-6 space-y-6 max-w-7xl">
         <div>
-          <h2 className="text-lg font-semibold mb-1">
-            Olá, {user?.name?.split(' ')[0] || 'usuário'} 👋
+          <h2 className="text-xl font-semibold tracking-tight">
+            Olá, {user?.name?.split(' ')[0] || 'usuário'}
           </h2>
-          <p className="text-sm text-gray-500">Aqui está o panorama do seu helpdesk.</p>
+          <p className="text-sm text-gray-500 mt-0.5">Aqui está o panorama do seu helpdesk.</p>
         </div>
 
-        {/* KPI grid */}
         <div className="grid gap-3 grid-cols-2 lg:grid-cols-5">
-          <KpiCard
-            label="Meus tickets"
-            value={counts.myActive}
-            icon={Inbox}
-            iconClass="bg-violet-50 text-violet-600"
-          />
-          <KpiCard
-            label="Abertos"
-            value={counts.open}
-            icon={Inbox}
-            iconClass="bg-blue-50 text-blue-600"
-          />
-          <KpiCard
-            label="Em andamento"
-            value={counts.inProgress}
-            icon={Clock}
-            iconClass="bg-amber-50 text-amber-600"
-          />
-          <KpiCard
-            label="Urgentes"
-            value={counts.urgent}
-            icon={AlertTriangle}
-            iconClass="bg-rose-50 text-rose-600"
-          />
-          <KpiCard
-            label="Resolvidos"
-            value={counts.resolved}
-            icon={CheckCircle2}
-            iconClass="bg-emerald-50 text-emerald-600"
-          />
+          <KpiCard label="Meus" value={counts.myActive} icon={Inbox} />
+          <KpiCard label="Abertos" value={counts.open} icon={Inbox} />
+          <KpiCard label="Em andamento" value={counts.inProgress} icon={Clock} />
+          <KpiCard label="Urgentes" value={counts.urgent} icon={AlertTriangle} />
+          <KpiCard label="Resolvidos" value={counts.resolved} icon={CheckCircle2} />
         </div>
 
-        <div className="grid gap-5 lg:grid-cols-3">
-          {/* Avg time card */}
-          <Card>
-            <CardHeader className="border-b py-3">
-              <h3 className="text-sm font-semibold">Tempo médio de primeira resposta</h3>
-            </CardHeader>
+        <div className="grid gap-4 lg:grid-cols-3">
+          <Card className="border-gray-200 shadow-none">
             <CardContent className="p-4">
-              <div className="text-3xl font-bold">{avgFirstResponse}</div>
-              <p className="text-xs text-gray-500 mt-1">
-                Calculado sobre {tickets.filter((t) => t.first_response_at).length} chamados.
+              <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-3">
+                Tempo médio de primeira resposta
+              </p>
+              <p className="text-2xl font-semibold tracking-tight">{avgFirstResponse}</p>
+              <p className="text-xs text-gray-500 mt-2">
+                Sobre {tickets.filter((t) => t.first_response_at).length} chamados respondidos
               </p>
             </CardContent>
           </Card>
 
-          {/* Pending tickets list */}
-          <Card className="lg:col-span-2">
-            <CardHeader className="border-b py-3 flex flex-row items-center justify-between">
-              <h3 className="text-sm font-semibold">Chamados pendentes</h3>
-              <Link
-                to="/tickets"
-                className="text-xs text-blue-600 hover:underline inline-flex items-center gap-1"
-              >
-                Ver todos <ArrowRight className="h-3 w-3" />
-              </Link>
-            </CardHeader>
+          <Card className="border-gray-200 shadow-none lg:col-span-2">
             <CardContent className="p-0">
+              <div className="px-4 py-3 border-b border-gray-100 flex items-center justify-between">
+                <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">
+                  Pendentes
+                </p>
+                <Link
+                  to="/tickets"
+                  className="text-xs text-gray-700 hover:text-gray-900 inline-flex items-center gap-1"
+                >
+                  Ver todos <ArrowRight className="h-3 w-3" />
+                </Link>
+              </div>
               {pending.length > 0 ? (
-                <ul className="divide-y">
+                <ul className="divide-y divide-gray-100">
                   {pending.map((t) => (
-                    <li
-                      key={t.id}
-                      className="flex items-center gap-3 px-4 py-3 hover:bg-gray-50 cursor-pointer"
-                      onClick={() => (window.location.href = `/tickets/${t.id}`)}
-                    >
-                      <Pill bullet color={STATUS_COLOR[t.status]} label={STATUS_LABEL[t.status]} />
-                      <span className="flex-1 truncate text-sm font-medium">{t.title}</span>
-                      {t.expand?.assignee && (
-                        <Avatar className="h-6 w-6">
-                          <AvatarImage
-                            src={`https://img.usecurling.com/ppl/thumbnail?seed=${t.expand.assignee.id}`}
-                          />
-                          <AvatarFallback className="text-[10px]">
-                            {t.expand.assignee.name.charAt(0)}
-                          </AvatarFallback>
-                        </Avatar>
-                      )}
-                      <span className="text-xs text-gray-500 w-12 text-right">
-                        {formatRelative(t.created)}
-                      </span>
+                    <li key={t.id}>
+                      <Link
+                        to={`/tickets/${t.id}`}
+                        className="flex items-center gap-3 px-4 py-2.5 hover:bg-gray-50/60"
+                      >
+                        <Pill
+                          bullet
+                          color={STATUS_COLOR[t.status]}
+                          label={STATUS_LABEL[t.status]}
+                        />
+                        <span className="flex-1 truncate text-sm font-medium text-gray-900">
+                          {t.title}
+                        </span>
+                        {t.expand?.assignee && (
+                          <Avatar className="h-5 w-5">
+                            <AvatarImage
+                              src={`https://img.usecurling.com/ppl/thumbnail?seed=${t.expand.assignee.id}`}
+                            />
+                            <AvatarFallback className="text-[9px]">
+                              {t.expand.assignee.name.charAt(0)}
+                            </AvatarFallback>
+                          </Avatar>
+                        )}
+                        <span className="text-xs text-gray-400 w-10 text-right shrink-0">
+                          {formatRelative(t.created)}
+                        </span>
+                      </Link>
                     </li>
                   ))}
                 </ul>
               ) : (
-                <p className="text-sm text-gray-500 italic p-6 text-center">
-                  Sem chamados pendentes.
-                </p>
+                <p className="text-sm text-gray-500 text-center py-8">Sem chamados pendentes.</p>
               )}
             </CardContent>
           </Card>
         </div>
 
-        {/* Chart de barras simples - últimos 7 dias */}
-        <Card>
-          <CardHeader className="border-b py-3">
-            <h3 className="text-sm font-semibold">Atividade dos últimos 7 dias</h3>
-            <p className="text-xs text-gray-500 mt-0.5">Chamados criados vs resolvidos</p>
-          </CardHeader>
-          <CardContent className="p-5">
-            <div className="flex items-end gap-3 h-48">
+        <Card className="border-gray-200 shadow-none">
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between mb-1">
+              <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">
+                Últimos 7 dias
+              </p>
+              <div className="flex items-center gap-4 text-xs text-gray-500">
+                <span className="inline-flex items-center gap-1.5">
+                  <span className="h-2 w-2 rounded-sm bg-gray-900" /> Criados
+                </span>
+                <span className="inline-flex items-center gap-1.5">
+                  <span className="h-2 w-2 rounded-sm bg-emerald-500" /> Resolvidos
+                </span>
+              </div>
+            </div>
+            <div className="flex items-end gap-3 h-44 mt-4">
               {last7Days.map((d, i) => (
                 <div key={i} className="flex-1 flex flex-col items-center gap-2">
                   <div className="w-full flex-1 flex items-end gap-1">
                     <div
-                      className="flex-1 bg-blue-500 rounded-t hover:bg-blue-600 transition-colors relative group"
+                      className="flex-1 bg-gray-900 rounded-sm hover:opacity-80 transition-opacity relative"
                       style={{ height: `${(d.count / maxCount) * 100}%` }}
                     >
                       {d.count > 0 && (
@@ -277,7 +247,7 @@ export default function Home() {
                       )}
                     </div>
                     <div
-                      className="flex-1 bg-emerald-500 rounded-t hover:bg-emerald-600 transition-colors relative"
+                      className="flex-1 bg-emerald-500 rounded-sm hover:opacity-80 transition-opacity relative"
                       style={{ height: `${(d.resolved / maxCount) * 100}%` }}
                     >
                       {d.resolved > 0 && (
@@ -287,17 +257,9 @@ export default function Home() {
                       )}
                     </div>
                   </div>
-                  <span className="text-xs text-gray-500">{d.day}</span>
+                  <span className="text-[11px] text-gray-500">{d.day}</span>
                 </div>
               ))}
-            </div>
-            <div className="flex items-center justify-center gap-6 mt-4 text-xs">
-              <span className="inline-flex items-center gap-1.5">
-                <span className="h-2 w-2 rounded-sm bg-blue-500" /> Criados
-              </span>
-              <span className="inline-flex items-center gap-1.5">
-                <span className="h-2 w-2 rounded-sm bg-emerald-500" /> Resolvidos
-              </span>
             </div>
           </CardContent>
         </Card>

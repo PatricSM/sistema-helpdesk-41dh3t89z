@@ -27,9 +27,6 @@ export function SettingsTelephony() {
               <li>Adicione um worker que escuta webhooks do provedor</li>
               <li>Implemente o discador no front via Twilio Voice SDK</li>
             </ol>
-            <p className="text-xs text-gray-500 italic mt-3">
-              No Frappe original isso vive em `frappe-helpdesk/.../telephony/`.
-            </p>
           </div>
         </CardContent>
       </Card>

@@ -331,7 +331,7 @@ export default function Tickets() {
         ]}
       />
 
-      <div className="px-5 py-2">
+      <div className="px-0">
         <ListView
           columns={columns}
           rows={filtered}

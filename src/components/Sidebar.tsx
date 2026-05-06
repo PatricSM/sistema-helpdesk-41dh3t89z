@@ -152,7 +152,7 @@ export function Sidebar() {
             icon={HelpCircle}
             label="Ajuda"
             isExpanded={isExpanded}
-            onClick={() => window.open('https://docs.frappe.io/helpdesk', '_blank')}
+            onClick={() => window.open('https://goskip.dev', '_blank')}
           />
         )}
         <SidebarLink

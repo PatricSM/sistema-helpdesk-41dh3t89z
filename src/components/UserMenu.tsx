@@ -69,14 +69,14 @@ export function UserMenu({ compact = false }: { compact?: boolean }) {
           </DropdownMenuItem>
         )}
         <DropdownMenuItem
-          onClick={() => window.open('https://t.me/frappedesk', '_blank')}
+          onClick={() => window.open('https://goskip.dev', '_blank')}
           className="cursor-pointer"
         >
           <LifeBuoy className="mr-2 h-4 w-4" />
           Suporte
         </DropdownMenuItem>
         <DropdownMenuItem
-          onClick={() => window.open('https://docs.frappe.io/helpdesk', '_blank')}
+          onClick={() => window.open('https://goskip.dev', '_blank')}
           className="cursor-pointer"
         >
           <BookOpen className="mr-2 h-4 w-4" />

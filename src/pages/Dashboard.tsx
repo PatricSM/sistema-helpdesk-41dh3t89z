@@ -85,20 +85,18 @@ export default function Dashboard() {
           rightSlot={<TicketDialog categories={categories} />}
         />
       </PageHeader>
-      <div className="space-y-6 animate-fade-in p-5">
-        <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
+      <div className="space-y-6 animate-fade-in px-6 py-6 max-w-7xl">
+        <div className="grid gap-3 grid-cols-2 lg:grid-cols-4">
           {kpis.map((k) => (
-            <Card key={k.label}>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium text-muted-foreground">
-                  {k.label}
-                </CardTitle>
-                <div className={`p-2 rounded-lg ${k.className}`}>
-                  <k.icon className="h-4 w-4" />
+            <Card key={k.label} className="border-gray-200 shadow-none">
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between mb-3">
+                  <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">
+                    {k.label}
+                  </p>
+                  <k.icon className="h-4 w-4 text-gray-400" strokeWidth={1.75} />
                 </div>
-              </CardHeader>
-              <CardContent>
-                <div className="text-3xl font-bold">{k.value}</div>
+                <p className="text-2xl font-semibold tracking-tight text-gray-900">{k.value}</p>
               </CardContent>
             </Card>
           ))}
@@ -106,7 +104,7 @@ export default function Dashboard() {
 
         <div>
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-semibold tracking-tight">Chamados recentes</h2>
+            <h2 className="text-base font-semibold tracking-tight">Chamados recentes</h2>
             <Link
               to="/tickets"
               className="text-sm text-primary inline-flex items-center gap-1 hover:gap-2 transition-all"
