@@ -7,6 +7,7 @@ import { PageTitle } from '@/components/PageTitle'
 import { TicketDialog } from '@/components/TicketDialog'
 import { ListView, ListColumn } from '@/components/ListView'
 import { ListToolbar, FilterDef } from '@/components/ListToolbar'
+import { ListViewsDropdown } from '@/components/ListViewsDropdown'
 import { ListSelectBanner } from '@/components/ListSelectBanner'
 import { Pill } from '@/components/Pill'
 import { EmptyState } from '@/components/EmptyState'
@@ -281,6 +282,23 @@ export default function Tickets() {
       </PageHeader>
 
       <ListToolbar
+        leftSlot={
+          <ListViewsDropdown
+            collectionName="tickets"
+            currentFilters={filterValues}
+            currentSortKey={sortKey}
+            currentSortDir={sortDir}
+            currentColumnsHidden={Object.keys(columnVis).filter((k) => columnVis[k] === false)}
+            onApply={(view) => {
+              setFilterValues((view.filters as Record<string, string>) || {})
+              if (view.sort_key) setSortKey(view.sort_key)
+              if (view.sort_dir) setSortDir(view.sort_dir)
+              const cv: ColumnVis = {}
+              for (const k of view.columns_hidden || []) cv[k] = false
+              setColumnVis(cv)
+            }}
+          />
+        }
         filters={filters}
         filterValues={filterValues}
         onFilterChange={(k, v) => setFilterValues({ ...filterValues, [k]: v })}

@@ -1,45 +1,47 @@
 # PocketBase Hooks
 
-Scripts JS executados pelo PocketBase no servidor. O runtime é Goja (ES5+
-algumas extensões), não Node — não há `npm`, `import`, async/await
-nativo, nem `fetch` global. Use `require()` e a API global `$app`.
+Scripts JS executados pelo PocketBase no servidor (Goja runtime). API global `$app`.
 
-## Como o PocketBase carrega
+## Como o PocketBase carrega arquivos deste diretório
 
-- Todos os arquivos `*.pb.js` deste diretório são carregados no startup.
-- Nomes começando com `_` (ex.: `_helpers.pb.js`) são utilitários
-  carregados primeiro pela ordem alfabética.
-- Para recarregar sem reiniciar: `pocketbase serve --hooksWatch`.
+| Padrão | Tratamento |
+|---|---|
+| `*.pb.js` | Hook script — executado no startup, registra hooks no PB. **Não pode usar `module.exports`** (não é um módulo CommonJS) |
+| `*.js` (sem `.pb`) | Módulo CommonJS — pode usar `module.exports`/`require()`. Não é executado no startup, só quando outro hook fizer `require()` |
 
 ## Arquivos
 
-| Arquivo | Eventos | O que faz |
+| Arquivo | Tipo | O que faz |
 |---|---|---|
-| `_helpers.pb.js` | módulo | `createNotification`, `getSetting`, `findMatchingAssignmentRule`, `findSlaPolicyForPriority`, `addMinutesIso` |
-| `tickets.pb.js` | `tickets` | `before/after create`, `before/after update`: aplica SLA, auto-assignment, notifica assignee/requester, marca `resolution_at` quando vira `resolved` |
-| `comments.pb.js` | `comments` | `after create`: marca `first_response_at` no ticket quando staff responde publicamente; notifica requester (público) ou assignee (interno) |
-| `auto_close.pb.js` | cron | `0 3 * * *`: fecha chamados resolvidos há mais de N dias (N vem de `settings['general'].auto_close_resolved_after_days`, padrão 7) |
+| `_helpers.js` | módulo | utilitários (`createNotification`, `getSetting`, `findMatchingAssignmentRule`, `findSlaPolicyForPriority`, `addMinutesIso`, `pickTeamMemberRoundRobin`) |
+| `tickets.pb.js` | hook | `onRecordCreate`/`onRecordAfterCreateSuccess`/`onRecordUpdate`/`onRecordAfterUpdateSuccess`: aplica SLA, auto-assignment (incluindo round-robin de team), notifica, marca `resolution_at` |
+| `comments.pb.js` | hook | `onRecordAfterCreateSuccess`: marca `first_response_at`, notifica requester/assignee |
+| `sla_check.pb.js` | cron */15min | detecta SLA estourado e cria notification |
+| `auto_close.pb.js` | cron diário 03:00 | fecha tickets resolved há > N dias |
 
-## Pontos de atenção
+## Gotchas descobertos durante validação
 
-1. **Idempotência**: `tickets.pb.js` checa `!ticket.get('first_response_at')` antes de setar para evitar sobrescrever.
-2. **Falhas silenciosas**: notificações usam `try/catch` e não bloqueiam o evento original. Logam em `console.error`.
-3. **Loop de notificações**: ao notificar, NÃO criamos notificação para o autor da ação (`if (requester !== authorId)` etc.).
-4. **`team` em assignment_rules**: por enquanto serve só de referência informativa. Para auto-rotação de membros do time, adicione lógica em `findMatchingAssignmentRule` lendo `team_members`.
-5. **`auth` no contexto**: `e.auth` contém o usuário autenticado da request — usado para detectar mudanças feitas pelo próprio requester (não notificá-lo de mudança que ele mesmo fez).
+### 1. `module.exports` só funciona em arquivos sem `.pb.js`
+PocketBase trata `*.pb.js` como hook scripts top-level. Para usar `module.exports`/`require`, o arquivo deve ter extensão `.js` (sem `.pb`). Por isso `_helpers.js` (não `_helpers.pb.js`).
+
+### 2. Nomes de hooks em PocketBase 0.30
+- ✅ `onRecordCreate` — model hook (antes do save, permite modificar `e.record`)
+- ✅ `onRecordCreateRequest` — request hook (apenas para validação)
+- ✅ `onRecordAfterCreateSuccess` — depois do save com sucesso
+- ✅ `onRecordUpdate` / `onRecordAfterUpdateSuccess` — análogos
+- ❌ `onRecordBeforeCreateRequest` / `onRecordAfterCreateRequest` — **não existem** (nomes antigos da v0.22)
+
+### 3. Campos `date` retornam objeto truthy mesmo vazio
+`record.get('campo_date')` retorna um objeto Date "vazio" que é truthy. Não use `if (!record.get('x'))` — use `if (!String(record.get('x') || '').trim())`.
 
 ## Setup local
-
 ```bash
 cd pocketbase
-./pocketbase serve --hooksWatch
+./pocketbase serve --dev
 ```
 
-Os hooks recarregam automaticamente ao salvar.
-
 ## Testando
-
-1. Crie um ticket com prioridade `high` → `sla_response_due` deve ser preenchido conforme SLA policy ativa.
-2. Crie uma assignment_rule (priority=high → assign_to_user=X). Crie outro ticket priority=high → assignee = X automaticamente.
-3. Como staff, comente publicamente em um ticket → `first_response_at` é setado, requester recebe notificação.
-4. Mude status para `resolved` → `resolution_at` é setado, requester é notificado.
+1. Crie um ticket priority `high` com SLA policy ativa → `sla_response_due`/`sla_resolution_due` preenchidos.
+2. Crie uma assignment rule (priority=high → team=X) → ticket atribuído ao membro do team com menos chamados abertos.
+3. Como staff, comente publicamente → `first_response_at` setado, requester recebe notification.
+4. Mude status para `resolved` → `resolution_at` setado.

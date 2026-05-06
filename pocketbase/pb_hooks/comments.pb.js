@@ -2,13 +2,13 @@
 
 /**
  * Hooks da coleção comments:
- * - onRecordAfterCreateRequest: marca first_response_at no ticket (se for de
+ * - onRecordAfterCreateSuccess: marca first_response_at no ticket (se for de
  *   agente/admin, comentário público) + notifica requester (se público) ou
  *   demais agentes (se interno).
  */
 
-onRecordAfterCreateRequest((e) => {
-  const helpers = require(`${__hooks}/_helpers.pb.js`)
+onRecordAfterCreateSuccess((e) => {
+  const helpers = require(`${__hooks}/_helpers.js`)
   const comment = e.record
   const ticketId = comment.get('ticket')
   const authorId = comment.get('author')
@@ -40,7 +40,9 @@ onRecordAfterCreateRequest((e) => {
 
   // 1) Marcar first_response_at se este é o primeiro comentário público
   //    de staff e o ticket ainda não foi respondido.
-  if (isStaff && !isInternal && !ticket.get('first_response_at')) {
+  // (PB retorna objeto truthy para date vazio — checamos via String().trim())
+  const curFirstResp = String(ticket.get('first_response_at') || '').trim()
+  if (isStaff && !isInternal && !curFirstResp) {
     try {
       ticket.set('first_response_at', new Date().toISOString())
       $app.save(ticket)

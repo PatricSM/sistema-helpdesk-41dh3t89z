@@ -156,14 +156,6 @@
           "collectionRef": "users"
         },
         {
-          "name": "vector",
-          "type": "vector",
-          "required": false,
-          "system": false,
-          "vectorDimensions": 1536,
-          "vectorDistance": "l2"
-        },
-        {
           "name": "created",
           "type": "autodate",
           "required": false,
@@ -270,14 +262,6 @@
           "required": false,
           "system": false,
           "collectionRef": "users"
-        },
-        {
-          "name": "vector",
-          "type": "vector",
-          "required": false,
-          "system": false,
-          "vectorDimensions": 1536,
-          "vectorDistance": "l2"
         },
         {
           "name": "created",
@@ -437,6 +421,30 @@
         { "name": "ticket", "type": "relation", "collectionRef": "tickets" },
         { "name": "read_at", "type": "date" },
         { "name": "created", "type": "autodate", "autodateTriggers": ["onCreate"] }
+      ]
+    },
+    {
+      "name": "list_views",
+      "type": "base",
+      "apiRules": {
+        "list": "@request.auth.id != '' && (owner = @request.auth.id || is_public = true)",
+        "view": "@request.auth.id != '' && (owner = @request.auth.id || is_public = true)",
+        "create": "@request.auth.id != '' && owner = @request.auth.id",
+        "update": "@request.auth.id != '' && owner = @request.auth.id",
+        "delete": "@request.auth.id != '' && owner = @request.auth.id"
+      },
+      "fields": [
+        { "name": "name", "type": "text", "required": true },
+        { "name": "collection_name", "type": "text", "required": true },
+        { "name": "filters", "type": "json" },
+        { "name": "sort_key", "type": "text" },
+        { "name": "sort_dir", "type": "select", "values": ["asc", "desc"] },
+        { "name": "columns_hidden", "type": "json" },
+        { "name": "owner", "type": "relation", "collectionRef": "users", "required": true },
+        { "name": "is_public", "type": "bool" },
+        { "name": "is_default", "type": "bool" },
+        { "name": "created", "type": "autodate", "autodateTriggers": ["onCreate"] },
+        { "name": "updated", "type": "autodate", "autodateTriggers": ["onCreate", "onUpdate"] }
       ]
     }
   ]

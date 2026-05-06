@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Textarea } from '@/components/ui/textarea'
+import { RichTextEditor } from '@/components/RichTextEditor'
 import {
   Select,
   SelectContent,
@@ -164,14 +164,11 @@ export default function ArticleEditor() {
             </div>
             <div className="grid gap-2">
               <Label htmlFor="content">Conteúdo *</Label>
-              <Textarea
-                id="content"
+              <RichTextEditor
                 value={content}
-                onChange={(e) => setContent(e.target.value)}
+                onChange={setContent}
                 placeholder="Escreva o artigo aqui..."
-                rows={14}
-                className="font-mono text-sm"
-                required
+                minHeight="300px"
               />
               {errors.content && <span className="text-xs text-destructive">{errors.content}</span>}
             </div>

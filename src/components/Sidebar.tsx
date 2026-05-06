@@ -7,7 +7,6 @@ import {
   BookOpen,
   Building2,
   Contact2,
-  Phone,
   Users,
   ArrowLeftFromLine,
   ArrowRightFromLine,
@@ -32,12 +31,11 @@ interface NavItem {
 
 const agentItems: NavItem[] = [
   { label: 'Início', icon: Home, to: '/home' },
-  { label: 'Painel', icon: LayoutDashboard, to: '/' },
+  { label: 'Painel', icon: LayoutDashboard, to: '/dashboard' },
   { label: 'Chamados', icon: Ticket, to: '/tickets' },
   { label: 'Base de Conhecimento', icon: BookOpen, to: '/knowledge-base' },
   { label: 'Clientes', icon: Building2, to: '/customers' },
   { label: 'Contatos', icon: Contact2, to: '/contacts' },
-  { label: 'Registros de Chamada', icon: Phone, to: '/call-logs' },
 ]
 
 const customerItems: NavItem[] = [
