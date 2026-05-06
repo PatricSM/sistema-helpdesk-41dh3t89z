@@ -67,7 +67,7 @@ export function ListView<T extends { id: string }>({
     <div className={cn('w-full', className)}>
       <table className="w-full text-sm">
         <thead>
-          <tr className="border-b text-xs text-gray-500 uppercase tracking-wide">
+          <tr className="border-b text-xs text-gray-500 font-medium">
             {selectable && (
               <th className="w-10 px-3 py-2.5">
                 <Checkbox
@@ -116,9 +116,9 @@ export function ListView<T extends { id: string }>({
               <tr
                 key={row.id}
                 className={cn(
-                  'border-b transition-colors',
-                  onRowClick && 'cursor-pointer hover:bg-gray-50',
-                  sel.has(row.id) && 'bg-blue-50/30',
+                  'border-b border-gray-100 transition-colors',
+                  onRowClick && 'cursor-pointer hover:bg-gray-50/60',
+                  sel.has(row.id) && 'bg-blue-50/40',
                 )}
                 onClick={(e) => {
                   // Evitar trigger ao clicar no checkbox

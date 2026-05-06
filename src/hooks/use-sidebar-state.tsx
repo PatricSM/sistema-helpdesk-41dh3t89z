@@ -11,7 +11,7 @@ const SidebarStateContext = createContext<SidebarState | undefined>(undefined)
 
 export function SidebarStateProvider({ children }: { children: ReactNode }) {
   const [isExpanded, setExpanded] = useState(true)
-  const width = isExpanded ? '220px' : '52px'
+  const width = isExpanded ? '212px' : '48px'
   return (
     <SidebarStateContext.Provider
       value={{ isExpanded, toggle: () => setExpanded((v) => !v), setExpanded, width }}

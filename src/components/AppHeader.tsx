@@ -7,9 +7,9 @@ import { ReactNode } from 'react'
  */
 export function AppHeader({ rightSlot }: { rightSlot?: ReactNode }) {
   return (
-    <div className="flex border-b pr-5 bg-background">
+    <div className="flex border-b border-gray-200 bg-background">
       <div id="app-header" className="flex-1 w-full" />
-      <div className="flex items-start justify-center">{rightSlot}</div>
+      <div className="flex items-center justify-center pr-3">{rightSlot}</div>
     </div>
   )
 }

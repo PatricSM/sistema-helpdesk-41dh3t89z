@@ -54,7 +54,12 @@ export function ListToolbar<T extends { id: string }>({
   const activeFilters = Object.values(filterValues).filter((v) => v && v !== 'all').length
 
   return (
-    <div className={cn('flex items-center justify-between gap-3 px-5 py-2.5 border-b', className)}>
+    <div
+      className={cn(
+        'flex items-center justify-between gap-3 px-4 py-2 border-b border-gray-200 bg-white',
+        className,
+      )}
+    >
       <div className="flex items-center gap-2">{leftSlot}</div>
       <div className="flex items-center gap-1.5">
         {rowCount !== undefined && (
