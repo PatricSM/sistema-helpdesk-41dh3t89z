@@ -30,9 +30,10 @@ bash ~/.claude/skills/skip-template-padrao/reference/check-conformance.sh \
   /mnt/d/Projetos/POCtemplates/templatesNoSkip/sistema-helpdesk-41dh3t89z
 ```
 
-**Esperado:** ~9 fails (RBAC):
+**Esperado:** **11 fails** (RBAC):
+
 - 1 `immutable-diff` em `use-auth.tsx` (signUp com role='client')
-- pb-rls/pb-field em migrations `0002_create_collections`, `0004_create_canned_responses`, `0008_create_customers_contacts_teams`, `0010_create_notifications`. Todas usam campos de escopo alternativos (`requester`/`assignee`/`author`/`owner`/`recipient`) e RLS gated por `@request.auth.role`, não pelo literal `user = @request.auth.id`.
+- pb-rls/pb-field em migrations `0002_create_collections`, `0004_create_canned_responses`, `0008_create_customers_contacts_teams`, `0010_create_notifications`, `0011_create_settings_collections`. Todas usam campos de escopo alternativos (`requester`/`assignee`/`author`/`owner`/`recipient`/`key`) e RLS gated por `@request.auth.role`, não pelo literal `user = @request.auth.id`.
 
 Qualquer outra falha é regressão e deve ser corrigida.
 

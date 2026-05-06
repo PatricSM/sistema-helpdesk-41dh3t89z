@@ -15,6 +15,7 @@ import {
   MessageSquareQuote,
   Tag,
   LifeBuoy,
+  Settings as SettingsIcon,
 } from 'lucide-react'
 import { useAuth } from '@/hooks/use-auth'
 import { useSidebarState } from '@/hooks/use-sidebar-state'
@@ -49,6 +50,7 @@ const adminItems: NavItem[] = [
   { label: 'Categorias', icon: Tag, to: '/categories' },
   { label: 'Times', icon: Users, to: '/teams' },
   { label: 'Agentes', icon: Users, to: '/agents' },
+  { label: 'Configurações', icon: SettingsIcon, to: '/settings' },
 ]
 
 export function Sidebar() {

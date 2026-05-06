@@ -25,6 +25,7 @@ import Agents from './pages/Agents'
 import Notifications from './pages/Notifications'
 import Search from './pages/Search'
 import CallLogs from './pages/CallLogs'
+import Settings from './pages/Settings'
 import NotFound from './pages/NotFound'
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
@@ -76,6 +77,7 @@ const App = () => (
             <Route path="/notifications" element={<Notifications />} />
             <Route path="/search" element={<Search />} />
             <Route path="/call-logs" element={<CallLogs />} />
+            <Route path="/settings" element={<Settings />} />
           </Route>
           <Route path="*" element={<NotFound />} />
         </Routes>
