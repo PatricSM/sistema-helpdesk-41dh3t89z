@@ -3,15 +3,28 @@ import { getArticles } from '@/services/knowledge_base'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Link } from 'react-router-dom'
 import { Input } from '@/components/ui/input'
-import { Search, Book } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import { Search, Book, Plus } from 'lucide-react'
+import { useAuth } from '@/hooks/use-auth'
+import { useRealtime } from '@/hooks/use-realtime'
 
 export default function KnowledgeBase() {
+  const { user } = useAuth()
+  const isAgentOrAdmin = user?.role === 'admin' || user?.role === 'agent'
   const [articles, setArticles] = useState<any[]>([])
   const [search, setSearch] = useState('')
 
+  const load = () => {
+    getArticles()
+      .then(setArticles)
+      .catch(() => {})
+  }
+
   useEffect(() => {
-    getArticles().then(setArticles)
+    load()
   }, [])
+
+  useRealtime('knowledge_base', load)
 
   const filtered = articles.filter(
     (a) =>
@@ -21,7 +34,7 @@ export default function KnowledgeBase() {
 
   return (
     <div className="space-y-6 max-w-5xl mx-auto w-full">
-      <div className="text-center space-y-4 py-8">
+      <div className="text-center space-y-4 py-8 relative">
         <h1 className="text-4xl font-bold">Como podemos ajudar?</h1>
         <div className="max-w-md mx-auto relative">
           <Search className="absolute left-3 top-3 h-5 w-5 text-muted-foreground" />
@@ -32,6 +45,15 @@ export default function KnowledgeBase() {
             onChange={(e) => setSearch(e.target.value)}
           />
         </div>
+        {isAgentOrAdmin && (
+          <div className="flex justify-center">
+            <Button asChild size="sm" className="gap-2">
+              <Link to="/knowledge-base/new">
+                <Plus className="h-4 w-4" /> Novo Artigo
+              </Link>
+            </Button>
+          </div>
+        )}
       </div>
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
