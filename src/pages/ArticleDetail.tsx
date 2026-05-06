@@ -2,10 +2,13 @@ import { useEffect, useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { getArticle } from '@/services/knowledge_base'
 import { Button } from '@/components/ui/button'
-import { ChevronLeft, ThumbsUp, ThumbsDown } from 'lucide-react'
+import { ChevronLeft, ThumbsUp, ThumbsDown, Pencil } from 'lucide-react'
+import { useAuth } from '@/hooks/use-auth'
 
 export default function ArticleDetail() {
   const { id } = useParams()
+  const { user } = useAuth()
+  const isAgentOrAdmin = user?.role === 'admin' || user?.role === 'agent'
   const [article, setArticle] = useState<any>(null)
   const [feedback, setFeedback] = useState<boolean | null>(null)
 
@@ -17,11 +20,20 @@ export default function ArticleDetail() {
 
   return (
     <div className="max-w-3xl mx-auto w-full space-y-6">
-      <Button variant="ghost" asChild className="-ml-4 text-muted-foreground">
-        <Link to="/knowledge-base">
-          <ChevronLeft className="mr-2 h-4 w-4" /> Voltar
-        </Link>
-      </Button>
+      <div className="flex items-center justify-between">
+        <Button variant="ghost" asChild className="-ml-4 text-muted-foreground">
+          <Link to="/knowledge-base">
+            <ChevronLeft className="mr-2 h-4 w-4" /> Voltar
+          </Link>
+        </Button>
+        {isAgentOrAdmin && (
+          <Button variant="outline" size="sm" asChild className="gap-1.5">
+            <Link to={`/knowledge-base/${id}/edit`}>
+              <Pencil className="h-3.5 w-3.5" /> Editar
+            </Link>
+          </Button>
+        )}
+      </div>
 
       <div className="space-y-4">
         <div className="space-y-2">

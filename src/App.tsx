@@ -5,12 +5,16 @@ import { TooltipProvider } from '@/components/ui/tooltip'
 import { AuthProvider, useAuth } from '@/hooks/use-auth'
 import Layout from './components/Layout'
 import Login from './pages/Login'
+import Register from './pages/Register'
 import Dashboard from './pages/Dashboard'
 import Tickets from './pages/Tickets'
 import TicketDetail from './pages/TicketDetail'
 import CreateTicket from './pages/CreateTicket'
 import KnowledgeBase from './pages/KnowledgeBase'
 import ArticleDetail from './pages/ArticleDetail'
+import ArticleEditor from './pages/ArticleEditor'
+import Categories from './pages/Categories'
+import CannedResponses from './pages/CannedResponses'
 import NotFound from './pages/NotFound'
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
@@ -28,6 +32,7 @@ const App = () => (
         <Sonner />
         <Routes>
           <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
           <Route
             element={
               <ProtectedRoute>
@@ -40,7 +45,11 @@ const App = () => (
             <Route path="/tickets/new" element={<CreateTicket />} />
             <Route path="/tickets/:id" element={<TicketDetail />} />
             <Route path="/knowledge-base" element={<KnowledgeBase />} />
+            <Route path="/knowledge-base/new" element={<ArticleEditor />} />
             <Route path="/knowledge-base/:id" element={<ArticleDetail />} />
+            <Route path="/knowledge-base/:id/edit" element={<ArticleEditor />} />
+            <Route path="/categories" element={<Categories />} />
+            <Route path="/canned-responses" element={<CannedResponses />} />
           </Route>
           <Route path="*" element={<NotFound />} />
         </Routes>

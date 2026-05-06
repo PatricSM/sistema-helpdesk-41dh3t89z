@@ -5,6 +5,7 @@ import { getComments, createComment } from '@/services/comments'
 import { useAuth } from '@/hooks/use-auth'
 import { useRealtime } from '@/hooks/use-realtime'
 import { getCategories } from '@/services/categories'
+import { getCannedResponses, CannedResponseRecord } from '@/services/canned_responses'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -45,6 +46,7 @@ export default function TicketDetail() {
   const [comments, setComments] = useState<any[]>([])
   const [categories, setCategories] = useState<any[]>([])
   const [agents, setAgents] = useState<any[]>([])
+  const [canned, setCanned] = useState<CannedResponseRecord[]>([])
 
   const [reply, setReply] = useState('')
   const [isInternal, setIsInternal] = useState(false)
@@ -64,6 +66,9 @@ export default function TicketDetail() {
     if (isAgentOrAdmin) {
       getCategories().then(setCategories)
       pb.collection('users').getFullList({ filter: "role='agent' || role='admin'" }).then(setAgents)
+      getCannedResponses()
+        .then(setCanned)
+        .catch(() => {})
     }
   }, [id, isAgentOrAdmin])
 
@@ -93,6 +98,10 @@ export default function TicketDetail() {
     } catch (err) {
       toast({ title: 'Erro', description: 'Falha ao enviar resposta.', variant: 'destructive' })
     }
+  }
+
+  const insertCanned = (text: string) => {
+    setReply((prev) => (prev ? `${prev}\n\n${text}` : text))
   }
 
   if (!ticket) return <div>Carregando...</div>
@@ -174,11 +183,30 @@ export default function TicketDetail() {
 
         <Card>
           <CardContent className="pt-6 space-y-4">
+            {isAgentOrAdmin && canned.length > 0 && (
+              <div className="flex items-center gap-2">
+                <Label className="text-xs text-muted-foreground">Resposta pronta:</Label>
+                <Select onValueChange={(v) => insertCanned(v)}>
+                  <SelectTrigger className="h-8 w-[260px] text-xs">
+                    <SelectValue placeholder="Inserir..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {canned.map((cr) => (
+                      <SelectItem key={cr.id} value={cr.body}>
+                        {cr.title}
+                        {cr.shortcut ? ` (${cr.shortcut})` : ''}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
             <Textarea
               placeholder="Escreva sua resposta..."
               value={reply}
               onChange={(e) => setReply(e.target.value)}
               rows={4}
+              className={isInternal ? 'bg-yellow-50 border-yellow-200' : ''}
             />
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
               {isAgentOrAdmin ? (

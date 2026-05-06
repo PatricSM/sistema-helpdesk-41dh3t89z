@@ -17,6 +17,8 @@ import {
   BookOpen,
   Settings,
   Users,
+  Tag,
+  MessageSquareQuote,
   LogOut,
   Bell,
   Search,
@@ -48,7 +50,16 @@ export default function Layout() {
     { title: 'Base de Conhecimento', icon: BookOpen, url: '/knowledge-base' },
   ]
 
+  if (user?.role === 'agent' || user?.role === 'admin') {
+    menuItems.push({
+      title: 'Respostas Prontas',
+      icon: MessageSquareQuote,
+      url: '/canned-responses',
+    })
+  }
+
   if (user?.role === 'admin') {
+    menuItems.push({ title: 'Categorias', icon: Tag, url: '/categories' })
     menuItems.push({ title: 'Usuários', icon: Users, url: '/users' })
     menuItems.push({ title: 'Configurações', icon: Settings, url: '/settings' })
   }

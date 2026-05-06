@@ -289,6 +289,47 @@
         }
       ],
       "indexes": []
+    },
+    {
+      "name": "canned_responses",
+      "type": "base",
+      "apiRules": {
+        "list": "@request.auth.id != '' && (@request.auth.role = 'admin' || @request.auth.role = 'agent')",
+        "view": "@request.auth.id != '' && (@request.auth.role = 'admin' || @request.auth.role = 'agent')",
+        "create": "@request.auth.id != '' && (@request.auth.role = 'admin' || @request.auth.role = 'agent') && owner = @request.auth.id",
+        "update": "@request.auth.id != '' && (@request.auth.role = 'admin' || owner = @request.auth.id)",
+        "delete": "@request.auth.id != '' && (@request.auth.role = 'admin' || owner = @request.auth.id)"
+      },
+      "fields": [
+        { "name": "title", "type": "text", "required": true, "system": false },
+        { "name": "body", "type": "text", "required": true, "system": false },
+        { "name": "shortcut", "type": "text", "required": false, "system": false },
+        {
+          "name": "owner",
+          "type": "relation",
+          "required": true,
+          "system": false,
+          "collectionRef": "users"
+        },
+        {
+          "name": "created",
+          "type": "autodate",
+          "required": false,
+          "system": false,
+          "autodateTriggers": ["onCreate"]
+        },
+        {
+          "name": "updated",
+          "type": "autodate",
+          "required": false,
+          "system": false,
+          "autodateTriggers": ["onCreate", "onUpdate"]
+        }
+      ],
+      "indexes": [
+        "CREATE INDEX idx_canned_responses_owner ON canned_responses (owner)",
+        "CREATE UNIQUE INDEX idx_canned_responses_owner_title ON canned_responses (owner, title)"
+      ]
     }
   ]
 }
