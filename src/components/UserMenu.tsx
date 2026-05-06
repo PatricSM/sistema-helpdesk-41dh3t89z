@@ -1,4 +1,5 @@
 import { LogOut, User, BookOpen, LifeBuoy, Users, ChevronsUpDown } from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
 import { useAuth } from '@/hooks/use-auth'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
@@ -20,6 +21,7 @@ const ROLE_LABEL: Record<string, string> = {
 
 export function UserMenu({ compact = false }: { compact?: boolean }) {
   const { user, signOut } = useAuth()
+  const navigate = useNavigate()
   const isClient = user?.role === 'client'
 
   return (
@@ -68,17 +70,11 @@ export function UserMenu({ compact = false }: { compact?: boolean }) {
             Portal do cliente
           </DropdownMenuItem>
         )}
-        <DropdownMenuItem
-          onClick={() => window.open('https://goskip.dev', '_blank')}
-          className="cursor-pointer"
-        >
+        <DropdownMenuItem onClick={() => navigate('/help')} className="cursor-pointer">
           <LifeBuoy className="mr-2 h-4 w-4" />
           Suporte
         </DropdownMenuItem>
-        <DropdownMenuItem
-          onClick={() => window.open('https://goskip.dev', '_blank')}
-          className="cursor-pointer"
-        >
+        <DropdownMenuItem onClick={() => navigate('/help')} className="cursor-pointer">
           <BookOpen className="mr-2 h-4 w-4" />
           Documentação
         </DropdownMenuItem>
