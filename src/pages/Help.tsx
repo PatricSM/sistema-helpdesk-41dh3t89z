@@ -1,15 +1,5 @@
 import { useState } from 'react'
-import {
-  HelpCircle,
-  Sparkles,
-  Ticket,
-  BookOpen,
-  Tag,
-  Timer,
-  Bell,
-  Keyboard,
-  Code,
-} from 'lucide-react'
+import { HelpCircle, Sparkles, Ticket, BookOpen, Tag, Timer, Bell } from 'lucide-react'
 import { PageHeader } from '@/components/PageHeader'
 import { PageTitle } from '@/components/PageTitle'
 import { cn } from '@/lib/utils'
@@ -20,8 +10,6 @@ import { HelpKB } from './help/HelpKB'
 import { HelpOrganization } from './help/HelpOrganization'
 import { HelpSLA } from './help/HelpSLA'
 import { HelpNotifications } from './help/HelpNotifications'
-import { HelpShortcuts } from './help/HelpShortcuts'
-import { HelpAPI } from './help/HelpAPI'
 
 interface Topic {
   key: string
@@ -62,14 +50,6 @@ const TOPICS: Topic[] = [
     group: 'Operação',
     component: HelpNotifications,
   },
-  {
-    key: 'shortcuts',
-    label: 'Atalhos',
-    icon: Keyboard,
-    group: 'Avançado',
-    component: HelpShortcuts,
-  },
-  { key: 'api', label: 'API', icon: Code, group: 'Avançado', component: HelpAPI },
 ]
 
 export default function Help() {
