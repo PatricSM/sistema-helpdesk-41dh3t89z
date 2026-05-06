@@ -2,6 +2,7 @@ import pb from '@/lib/pocketbase/client'
 
 export type TicketStatus = 'open' | 'in_progress' | 'resolved' | 'closed'
 export type TicketPriority = 'low' | 'medium' | 'high' | 'urgent'
+export type TicketType = 'question' | 'incident' | 'bug' | 'unspecified'
 
 export interface TicketRecord {
   id: string
@@ -9,9 +10,14 @@ export interface TicketRecord {
   description: string
   status: TicketStatus
   priority: TicketPriority
+  type?: TicketType
   category?: string
   requester: string
   assignee?: string
+  first_response_at?: string
+  resolution_at?: string
+  sla_response_due?: string
+  sla_resolution_due?: string
   created: string
   updated: string
   expand?: {

@@ -28,6 +28,7 @@ import { extractFieldErrors, getErrorMessage } from '@/lib/pocketbase/errors'
 
 type TicketStatus = 'open' | 'in_progress' | 'resolved' | 'closed'
 type TicketPriority = 'low' | 'medium' | 'high' | 'urgent'
+type TicketType = 'question' | 'incident' | 'bug' | 'unspecified'
 
 interface TicketLike {
   id: string
@@ -35,6 +36,7 @@ interface TicketLike {
   description: string
   status: TicketStatus
   priority: TicketPriority
+  type?: TicketType
   category?: string
   requester?: string
 }

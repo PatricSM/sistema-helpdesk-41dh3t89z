@@ -7,14 +7,25 @@ import Layout from './components/Layout'
 import Login from './pages/Login'
 import Register from './pages/Register'
 import Dashboard from './pages/Dashboard'
+import Home from './pages/Home'
 import Tickets from './pages/Tickets'
 import TicketDetail from './pages/TicketDetail'
 import CreateTicket from './pages/CreateTicket'
 import KnowledgeBase from './pages/KnowledgeBase'
+import Articles from './pages/Articles'
 import ArticleDetail from './pages/ArticleDetail'
 import ArticleEditor from './pages/ArticleEditor'
 import Categories from './pages/Categories'
 import CannedResponses from './pages/CannedResponses'
+import Customers from './pages/Customers'
+import Contacts from './pages/Contacts'
+import Teams from './pages/Teams'
+import TeamDetail from './pages/TeamDetail'
+import Agents from './pages/Agents'
+import Notifications from './pages/Notifications'
+import Search from './pages/Search'
+import CallLogs from './pages/CallLogs'
+import Settings from './pages/Settings'
 import NotFound from './pages/NotFound'
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
@@ -40,16 +51,33 @@ const App = () => (
               </ProtectedRoute>
             }
           >
-            <Route path="/" element={<Dashboard />} />
+            <Route path="/" element={<Home />} />
+            <Route path="/home" element={<Home />} />
+            <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/tickets" element={<Tickets />} />
             <Route path="/tickets/new" element={<CreateTicket />} />
             <Route path="/tickets/:id" element={<TicketDetail />} />
+            <Route path="/my-tickets" element={<Tickets />} />
+            <Route path="/my-tickets/new" element={<CreateTicket />} />
+            <Route path="/my-tickets/:id" element={<TicketDetail />} />
             <Route path="/knowledge-base" element={<KnowledgeBase />} />
             <Route path="/knowledge-base/new" element={<ArticleEditor />} />
             <Route path="/knowledge-base/:id" element={<ArticleDetail />} />
             <Route path="/knowledge-base/:id/edit" element={<ArticleEditor />} />
+            <Route path="/kb-public" element={<KnowledgeBase />} />
+            <Route path="/kb-public/articles/:id" element={<ArticleDetail />} />
+            <Route path="/kb-public/:categoryId" element={<Articles />} />
             <Route path="/categories" element={<Categories />} />
             <Route path="/canned-responses" element={<CannedResponses />} />
+            <Route path="/customers" element={<Customers />} />
+            <Route path="/contacts" element={<Contacts />} />
+            <Route path="/teams" element={<Teams />} />
+            <Route path="/teams/:id" element={<TeamDetail />} />
+            <Route path="/agents" element={<Agents />} />
+            <Route path="/notifications" element={<Notifications />} />
+            <Route path="/search" element={<Search />} />
+            <Route path="/call-logs" element={<CallLogs />} />
+            <Route path="/settings" element={<Settings />} />
           </Route>
           <Route path="*" element={<NotFound />} />
         </Routes>
