@@ -11,6 +11,7 @@ import Tickets from './pages/Tickets'
 import TicketDetail from './pages/TicketDetail'
 import CreateTicket from './pages/CreateTicket'
 import KnowledgeBase from './pages/KnowledgeBase'
+import Articles from './pages/Articles'
 import ArticleDetail from './pages/ArticleDetail'
 import ArticleEditor from './pages/ArticleEditor'
 import Categories from './pages/Categories'
@@ -41,13 +42,20 @@ const App = () => (
             }
           >
             <Route path="/" element={<Dashboard />} />
+            <Route path="/home" element={<Dashboard />} />
             <Route path="/tickets" element={<Tickets />} />
             <Route path="/tickets/new" element={<CreateTicket />} />
             <Route path="/tickets/:id" element={<TicketDetail />} />
+            <Route path="/my-tickets" element={<Tickets />} />
+            <Route path="/my-tickets/new" element={<CreateTicket />} />
+            <Route path="/my-tickets/:id" element={<TicketDetail />} />
             <Route path="/knowledge-base" element={<KnowledgeBase />} />
             <Route path="/knowledge-base/new" element={<ArticleEditor />} />
             <Route path="/knowledge-base/:id" element={<ArticleDetail />} />
             <Route path="/knowledge-base/:id/edit" element={<ArticleEditor />} />
+            <Route path="/kb-public" element={<KnowledgeBase />} />
+            <Route path="/kb-public/articles/:id" element={<ArticleDetail />} />
+            <Route path="/kb-public/:categoryId" element={<Articles />} />
             <Route path="/categories" element={<Categories />} />
             <Route path="/canned-responses" element={<CannedResponses />} />
           </Route>
