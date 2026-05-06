@@ -8,6 +8,7 @@ import {
   Building2,
   Contact2,
   Phone,
+  Users,
   ArrowLeftFromLine,
   ArrowRightFromLine,
   HelpCircle,
@@ -46,6 +47,8 @@ const customerItems: NavItem[] = [
 const adminItems: NavItem[] = [
   { label: 'Respostas Prontas', icon: MessageSquareQuote, to: '/canned-responses' },
   { label: 'Categorias', icon: Tag, to: '/categories' },
+  { label: 'Times', icon: Users, to: '/teams' },
+  { label: 'Agentes', icon: Users, to: '/agents' },
 ]
 
 export function Sidebar() {
@@ -73,6 +76,7 @@ export function Sidebar() {
         <SidebarLink
           icon={SearchIcon}
           label="Buscar"
+          to="/search"
           isExpanded={isExpanded}
           className="mt-1.5"
           rightSlot={
@@ -92,6 +96,7 @@ export function Sidebar() {
           <SidebarLink
             icon={Bell}
             label="Notificações"
+            to="/notifications"
             isExpanded={isExpanded}
             className="my-0.5"
             rightSlot={

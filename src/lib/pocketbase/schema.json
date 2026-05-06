@@ -336,6 +336,108 @@
         "CREATE INDEX idx_canned_responses_owner ON canned_responses (owner)",
         "CREATE UNIQUE INDEX idx_canned_responses_owner_title ON canned_responses (owner, title)"
       ]
+    },
+    {
+      "name": "customers",
+      "type": "base",
+      "apiRules": {
+        "list": "@request.auth.id != ''",
+        "view": "@request.auth.id != ''",
+        "create": "@request.auth.role = 'admin' || @request.auth.role = 'agent'",
+        "update": "@request.auth.role = 'admin' || @request.auth.role = 'agent'",
+        "delete": "@request.auth.role = 'admin'"
+      },
+      "fields": [
+        { "name": "name", "type": "text", "required": true },
+        { "name": "website", "type": "url" },
+        { "name": "industry", "type": "text" },
+        { "name": "logo", "type": "text" },
+        { "name": "notes", "type": "text" },
+        { "name": "created", "type": "autodate", "autodateTriggers": ["onCreate"] },
+        { "name": "updated", "type": "autodate", "autodateTriggers": ["onCreate", "onUpdate"] }
+      ]
+    },
+    {
+      "name": "contacts",
+      "type": "base",
+      "apiRules": {
+        "list": "@request.auth.id != ''",
+        "view": "@request.auth.id != ''",
+        "create": "@request.auth.role = 'admin' || @request.auth.role = 'agent'",
+        "update": "@request.auth.role = 'admin' || @request.auth.role = 'agent'",
+        "delete": "@request.auth.role = 'admin'"
+      },
+      "fields": [
+        { "name": "name", "type": "text", "required": true },
+        { "name": "email", "type": "email" },
+        { "name": "phone", "type": "text" },
+        { "name": "mobile", "type": "text" },
+        { "name": "customer", "type": "relation", "collectionRef": "customers" },
+        { "name": "user", "type": "relation", "collectionRef": "users" },
+        { "name": "notes", "type": "text" },
+        { "name": "created", "type": "autodate", "autodateTriggers": ["onCreate"] },
+        { "name": "updated", "type": "autodate", "autodateTriggers": ["onCreate", "onUpdate"] }
+      ]
+    },
+    {
+      "name": "teams",
+      "type": "base",
+      "apiRules": {
+        "list": "@request.auth.id != ''",
+        "view": "@request.auth.id != ''",
+        "create": "@request.auth.role = 'admin'",
+        "update": "@request.auth.role = 'admin'",
+        "delete": "@request.auth.role = 'admin'"
+      },
+      "fields": [
+        { "name": "name", "type": "text", "required": true },
+        { "name": "description", "type": "text" },
+        { "name": "color", "type": "text" },
+        { "name": "created", "type": "autodate", "autodateTriggers": ["onCreate"] },
+        { "name": "updated", "type": "autodate", "autodateTriggers": ["onCreate", "onUpdate"] }
+      ]
+    },
+    {
+      "name": "team_members",
+      "type": "base",
+      "apiRules": {
+        "list": "@request.auth.id != ''",
+        "view": "@request.auth.id != ''",
+        "create": "@request.auth.role = 'admin'",
+        "update": "@request.auth.role = 'admin'",
+        "delete": "@request.auth.role = 'admin'"
+      },
+      "fields": [
+        { "name": "team", "type": "relation", "collectionRef": "teams", "required": true },
+        { "name": "user", "type": "relation", "collectionRef": "users", "required": true },
+        { "name": "role", "type": "select", "values": ["member", "lead"] },
+        { "name": "created", "type": "autodate", "autodateTriggers": ["onCreate"] }
+      ]
+    },
+    {
+      "name": "notifications",
+      "type": "base",
+      "apiRules": {
+        "list": "@request.auth.id = recipient",
+        "view": "@request.auth.id = recipient",
+        "create": "@request.auth.id != ''",
+        "update": "@request.auth.id = recipient",
+        "delete": "@request.auth.id = recipient"
+      },
+      "fields": [
+        { "name": "recipient", "type": "relation", "collectionRef": "users", "required": true },
+        {
+          "name": "kind",
+          "type": "select",
+          "values": ["ticket_assigned", "ticket_replied", "ticket_status_changed", "mention"],
+          "required": true
+        },
+        { "name": "title", "type": "text", "required": true },
+        { "name": "body", "type": "text" },
+        { "name": "ticket", "type": "relation", "collectionRef": "tickets" },
+        { "name": "read_at", "type": "date" },
+        { "name": "created", "type": "autodate", "autodateTriggers": ["onCreate"] }
+      ]
     }
   ]
 }
