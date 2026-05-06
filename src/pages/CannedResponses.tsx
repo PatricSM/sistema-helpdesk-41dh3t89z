@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react'
 import { Plus, Pencil, Trash, Copy, MessageSquareQuote } from 'lucide-react'
 import { Navigate } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
@@ -26,7 +25,12 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog'
-import { Badge } from '@/components/ui/badge'
+import { PageHeader } from '@/components/PageHeader'
+import { PageTitle } from '@/components/PageTitle'
+import { ListView, ListColumn } from '@/components/ListView'
+import { ListToolbar } from '@/components/ListToolbar'
+import { EmptyState } from '@/components/EmptyState'
+import { Pill } from '@/components/Pill'
 import { useToast } from '@/hooks/use-toast'
 import { useRealtime } from '@/hooks/use-realtime'
 import { useAuth } from '@/hooks/use-auth'
@@ -90,8 +94,8 @@ function ResponseDialog({
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         {children || (
-          <Button className="gap-2">
-            <Plus className="h-4 w-4" /> Nova resposta
+          <Button className="gap-1.5 bg-gray-900 hover:bg-gray-800 text-white" size="sm">
+            <Plus className="h-4 w-4" /> Create
           </Button>
         )}
       </DialogTrigger>
@@ -152,6 +156,7 @@ export default function CannedResponses() {
   const isAgentOrAdmin = user?.role === 'admin' || user?.role === 'agent'
 
   const [responses, setResponses] = useState<CannedResponseRecord[]>([])
+  const [search, setSearch] = useState('')
   const { toast } = useToast()
 
   const load = async () => {
@@ -169,6 +174,16 @@ export default function CannedResponses() {
   useRealtime('canned_responses', load)
 
   if (!isAgentOrAdmin) return <Navigate to="/" replace />
+
+  const filtered = responses.filter((r) => {
+    if (!search) return true
+    const q = search.toLowerCase()
+    return (
+      r.title.toLowerCase().includes(q) ||
+      (r.shortcut || '').toLowerCase().includes(q) ||
+      r.body.toLowerCase().includes(q)
+    )
+  })
 
   const copy = async (text: string) => {
     try {
@@ -192,84 +207,116 @@ export default function CannedResponses() {
     }
   }
 
-  return (
-    <div className="space-y-6 animate-fade-in">
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Respostas prontas</h1>
-          <p className="text-muted-foreground mt-1">
-            Modelos reutilizáveis de mensagens para os chamados.
-          </p>
-        </div>
-        <ResponseDialog />
-      </div>
-
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {responses.length > 0 ? (
-          responses.map((r) => (
-            <Card key={r.id} className="group">
-              <CardHeader className="flex flex-row items-start justify-between space-y-0 pb-2">
-                <div className="flex items-center gap-2">
-                  <MessageSquareQuote className="h-4 w-4 text-muted-foreground" />
-                  <CardTitle className="text-base">{r.title}</CardTitle>
-                </div>
-                {r.shortcut && (
-                  <Badge variant="outline" className="font-mono text-xs">
-                    {r.shortcut}
-                  </Badge>
-                )}
-              </CardHeader>
-              <CardContent>
-                <p className="text-sm text-muted-foreground line-clamp-4 whitespace-pre-wrap">
-                  {r.body}
-                </p>
-                <div className="flex items-center gap-2 mt-4 pt-3 border-t opacity-0 group-hover:opacity-100 transition-opacity">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="h-7 text-xs gap-1"
-                    onClick={() => copy(r.body)}
-                  >
-                    <Copy className="h-3 w-3" /> Copiar
-                  </Button>
-                  <ResponseDialog response={r}>
-                    <Button variant="ghost" size="sm" className="h-7 text-xs gap-1">
-                      <Pencil className="h-3 w-3" /> Editar
-                    </Button>
-                  </ResponseDialog>
-                  <AlertDialog>
-                    <AlertDialogTrigger asChild>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="h-7 text-xs gap-1 text-destructive"
-                      >
-                        <Trash className="h-3 w-3" /> Excluir
-                      </Button>
-                    </AlertDialogTrigger>
-                    <AlertDialogContent>
-                      <AlertDialogHeader>
-                        <AlertDialogTitle>Excluir resposta?</AlertDialogTitle>
-                        <AlertDialogDescription>Esta ação é irreversível.</AlertDialogDescription>
-                      </AlertDialogHeader>
-                      <AlertDialogFooter>
-                        <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                        <AlertDialogAction onClick={() => handleDelete(r.id)}>
-                          Excluir
-                        </AlertDialogAction>
-                      </AlertDialogFooter>
-                    </AlertDialogContent>
-                  </AlertDialog>
-                </div>
-              </CardContent>
-            </Card>
-          ))
+  const columns: ListColumn<CannedResponseRecord>[] = [
+    {
+      key: 'title',
+      label: 'Título',
+      render: (r) => <span className="font-medium text-gray-900">{r.title}</span>,
+    },
+    {
+      key: 'shortcut',
+      label: 'Atalho',
+      width: '120px',
+      render: (r) =>
+        r.shortcut ? (
+          <Pill color="gray" label={r.shortcut} className="font-mono" />
         ) : (
-          <div className="col-span-full py-12 text-center text-muted-foreground border rounded-lg border-dashed bg-muted/10">
-            Nenhuma resposta pronta cadastrada.
-          </div>
-        )}
+          <span className="text-xs text-gray-400">—</span>
+        ),
+    },
+    {
+      key: 'body',
+      label: 'Mensagem',
+      render: (r) => (
+        <span className="text-sm text-gray-600 truncate block max-w-md">
+          {r.body.replace(/\n/g, ' ')}
+        </span>
+      ),
+    },
+    {
+      key: 'actions',
+      label: '',
+      width: '120px',
+      align: 'right',
+      render: (r) => (
+        <div className="flex items-center justify-end gap-1" onClick={(e) => e.stopPropagation()}>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-7 w-7"
+            onClick={() => copy(r.body)}
+            title="Copiar"
+          >
+            <Copy className="h-3.5 w-3.5" />
+          </Button>
+          <ResponseDialog response={r}>
+            <Button variant="ghost" size="icon" className="h-7 w-7" title="Editar">
+              <Pencil className="h-3.5 w-3.5" />
+            </Button>
+          </ResponseDialog>
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-7 w-7 text-destructive"
+                title="Excluir"
+              >
+                <Trash className="h-3.5 w-3.5" />
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Excluir resposta?</AlertDialogTitle>
+                <AlertDialogDescription>Esta ação é irreversível.</AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                <AlertDialogAction onClick={() => handleDelete(r.id)}>Excluir</AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+        </div>
+      ),
+    },
+  ]
+
+  return (
+    <>
+      <PageHeader>
+        <PageTitle
+          title="Respostas Prontas"
+          icon={MessageSquareQuote}
+          rightSlot={<ResponseDialog />}
+        />
+      </PageHeader>
+
+      <ListToolbar
+        leftSlot={
+          <Input
+            placeholder="Buscar..."
+            className="h-8 w-60 text-sm"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
+        }
+        rowCount={filtered.length}
+      />
+
+      <div className="px-0">
+        <ListView
+          columns={columns}
+          rows={filtered}
+          emptyState={
+            <EmptyState
+              icon={MessageSquareQuote}
+              title="Nenhuma resposta pronta"
+              description="Crie modelos reutilizáveis para responder rapidamente nos chamados."
+              action={<ResponseDialog />}
+            />
+          }
+        />
       </div>
-    </div>
+    </>
   )
 }

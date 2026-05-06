@@ -32,7 +32,7 @@ interface NavItem {
 
 const agentItems: NavItem[] = [
   { label: 'Início', icon: Home, to: '/home' },
-  { label: 'Painel', icon: LayoutDashboard, to: '/' },
+  { label: 'Painel', icon: LayoutDashboard, to: '/dashboard' },
   { label: 'Chamados', icon: Ticket, to: '/tickets' },
   { label: 'Base de Conhecimento', icon: BookOpen, to: '/knowledge-base' },
   { label: 'Clientes', icon: Building2, to: '/customers' },
