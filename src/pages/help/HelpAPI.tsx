@@ -73,9 +73,9 @@ attachments=@file2.pdf`}</Code>
       <h2>Realtime</h2>
       <p>
         O front usa o hook <code>useRealtime(name, callback)</code> (em{' '}
-        <code>src/hooks/use-realtime.ts</code>) que assina eventos da coleção
-        (<code>create</code>, <code>update</code>, <code>delete</code>) e cancela automaticamente
-        no unmount. É como o painel atualiza sem refresh.
+        <code>src/hooks/use-realtime.ts</code>) que assina eventos da coleção (<code>create</code>,{' '}
+        <code>update</code>, <code>delete</code>) e cancela automaticamente no unmount. É como o
+        painel atualiza sem refresh.
       </p>
 
       <h2>Coleções principais</h2>
