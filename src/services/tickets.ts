@@ -18,6 +18,9 @@ export interface TicketRecord {
   resolution_at?: string
   sla_response_due?: string
   sla_resolution_due?: string
+  sla_response_breached?: boolean
+  sla_resolution_breached?: boolean
+  team?: string
   created: string
   updated: string
   expand?: {

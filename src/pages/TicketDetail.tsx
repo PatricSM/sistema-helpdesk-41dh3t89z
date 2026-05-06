@@ -9,7 +9,8 @@ import {
   MessageSquare,
   Activity,
   Trash,
-  ChevronDown,
+  Paperclip,
+  Download,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
@@ -52,7 +53,7 @@ import {
   TicketPriority,
   TicketType,
 } from '@/services/tickets'
-import { getComments, createComment } from '@/services/comments'
+import { getComments, createComment, getAttachmentUrl, CommentRecord } from '@/services/comments'
 import { getCategories, CategoryRecord } from '@/services/categories'
 import { getCannedResponses, CannedResponseRecord } from '@/services/canned_responses'
 import { extractFieldErrors, getErrorMessage } from '@/lib/pocketbase/errors'
@@ -82,16 +83,6 @@ const TYPE_LABEL: Record<TicketType, string> = {
   unspecified: 'Unspecified',
 }
 
-interface CommentRecord {
-  id: string
-  ticket: string
-  author: string
-  body: string
-  is_internal?: boolean
-  created: string
-  expand?: { author?: { id: string; name: string; role?: string } }
-}
-
 interface AgentUser {
   id: string
   name: string
@@ -117,6 +108,8 @@ export default function TicketDetail() {
   const [isInternal, setIsInternal] = useState(false)
   const [submitting, setSubmitting] = useState(false)
   const [showAllActivity, setShowAllActivity] = useState(true)
+  const [pendingFiles, setPendingFiles] = useState<File[]>([])
+  const fileInputRef = useRef<HTMLInputElement>(null)
   const [composeMode, setComposeMode] = useState<'reply' | 'comment'>('reply')
 
   const messagesEndRef = useRef<HTMLDivElement>(null)
@@ -214,21 +207,23 @@ export default function TicketDetail() {
 
   const handleReply = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!reply.trim() || !user) return
+    if ((!reply.trim() && pendingFiles.length === 0) || !user) return
     setSubmitting(true)
     try {
       const wantInternal = composeMode === 'comment' && isAgentOrAdmin
       await createComment({
         ticket: ticket.id,
         author: user.id,
-        body: reply,
+        body: reply || '(anexos)',
         is_internal: wantInternal || isInternal,
+        files: pendingFiles.length > 0 ? pendingFiles : null,
       })
       // Marca first_response_at se ainda não tem
       if (!ticket.first_response_at && isAgentOrAdmin && !wantInternal) {
         await updateTicket(ticket.id, { first_response_at: new Date().toISOString() })
       }
       setReply('')
+      setPendingFiles([])
       setIsInternal(false)
       toast({ title: 'Enviado!' })
     } catch (err) {
@@ -364,6 +359,7 @@ export default function TicketDetail() {
                   authorId={c.expand?.author?.id || c.author}
                   ts={c.created}
                   text={c.body}
+                  comment={c}
                 />
               ))}
               <div ref={messagesEndRef} />
@@ -384,6 +380,7 @@ export default function TicketDetail() {
                     ts={c.created}
                     text={c.body}
                     isInternal
+                    comment={c}
                   />
                 ))}
               </TabsContent>
@@ -513,10 +510,54 @@ export default function TicketDetail() {
                   composeMode === 'comment' && 'bg-amber-50',
                 )}
               />
-              <div className="flex items-center justify-end pt-2 border-t">
+              {pendingFiles.length > 0 && (
+                <div className="flex flex-wrap gap-1.5 pb-2">
+                  {pendingFiles.map((f, i) => (
+                    <span
+                      key={i}
+                      className="inline-flex items-center gap-1.5 px-2 py-1 bg-gray-100 rounded text-xs"
+                    >
+                      <Paperclip className="h-3 w-3 text-gray-500" />
+                      <span className="max-w-[200px] truncate">{f.name}</span>
+                      <button
+                        type="button"
+                        className="text-gray-400 hover:text-destructive"
+                        onClick={() => setPendingFiles(pendingFiles.filter((_, idx) => idx !== i))}
+                      >
+                        ×
+                      </button>
+                    </span>
+                  ))}
+                </div>
+              )}
+              <input
+                type="file"
+                ref={fileInputRef}
+                multiple
+                hidden
+                onChange={(e) => {
+                  if (e.target.files) {
+                    const files = Array.from(e.target.files).slice(0, 5 - pendingFiles.length)
+                    setPendingFiles([...pendingFiles, ...files])
+                    e.target.value = ''
+                  }
+                }}
+              />
+              <div className="flex items-center justify-between pt-2 border-t">
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  className="h-7 gap-1.5 text-xs text-gray-600"
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={pendingFiles.length >= 5}
+                >
+                  <Paperclip className="h-3.5 w-3.5" />
+                  Anexar {pendingFiles.length > 0 && `(${pendingFiles.length}/5)`}
+                </Button>
                 <Button
                   type="submit"
-                  disabled={!reply.trim() || submitting}
+                  disabled={(!reply.trim() && pendingFiles.length === 0) || submitting}
                   size="sm"
                   className="gap-1.5 bg-gray-900 hover:bg-gray-800"
                 >
@@ -689,12 +730,14 @@ function CommentBubble({
   ts,
   text,
   isInternal,
+  comment,
 }: {
   authorName: string
   authorId: string
   ts: string
   text: string
   isInternal?: boolean
+  comment?: CommentRecord
 }) {
   return (
     <div className="flex gap-3">
@@ -720,6 +763,23 @@ function CommentBubble({
         >
           {text}
         </div>
+        {comment?.attachments && comment.attachments.length > 0 && (
+          <div className="flex flex-wrap gap-1.5 mt-2">
+            {comment.attachments.map((filename) => (
+              <a
+                key={filename}
+                href={getAttachmentUrl(comment, filename)}
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex items-center gap-1.5 px-2 py-1 bg-white border border-gray-200 rounded text-xs text-gray-700 hover:bg-gray-50 hover:border-gray-300 transition-colors"
+              >
+                <Paperclip className="h-3 w-3 text-gray-400" />
+                <span className="max-w-[180px] truncate">{filename}</span>
+                <Download className="h-3 w-3 text-gray-400" />
+              </a>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   )

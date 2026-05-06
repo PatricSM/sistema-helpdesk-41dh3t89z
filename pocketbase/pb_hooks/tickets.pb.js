@@ -39,7 +39,19 @@ onRecordAfterCreateRequest((e) => {
   if (!ticket.get('assignee')) {
     const rule = helpers.findMatchingAssignmentRule($app, ticket)
     if (rule) {
-      const userId = rule.get('assign_to_user')
+      let userId = rule.get('assign_to_user')
+
+      // Se a regra define um time, fazer round-robin entre membros
+      if (!userId) {
+        const teamId = rule.get('assign_to_team')
+        if (teamId) {
+          userId = helpers.pickTeamMemberRoundRobin($app, teamId)
+          if (userId) {
+            ticket.set('team', teamId)
+          }
+        }
+      }
+
       if (userId) {
         try {
           ticket.set('assignee', userId)
@@ -48,8 +60,6 @@ onRecordAfterCreateRequest((e) => {
           console.error('auto-assignment failed:', err)
         }
       }
-      // Notar: assign_to_team é referência informativa por enquanto
-      // (a UI exibe; auto-rotação por time precisaria de algoritmo extra)
     }
   }
 

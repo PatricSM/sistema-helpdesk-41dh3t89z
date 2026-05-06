@@ -3,34 +3,25 @@ import { Navigate } from 'react-router-dom'
 import {
   Settings as SettingsIcon,
   Cog,
-  Mail,
   Timer,
   UserPlus,
   Users,
   Tag,
   GitFork,
-  Phone,
-  LayoutTemplate,
-  Sparkles,
   MessageSquareQuote,
 } from 'lucide-react'
-import { Button } from '@/components/ui/button'
 import { PageHeader } from '@/components/PageHeader'
 import { PageTitle } from '@/components/PageTitle'
 import { useAuth } from '@/hooks/use-auth'
 import { cn } from '@/lib/utils'
 
 import { SettingsGeneral } from './settings/SettingsGeneral'
-import { SettingsEmail } from './settings/SettingsEmail'
 import { SettingsSLA } from './settings/SettingsSLA'
 import { SettingsInviteAgents } from './settings/SettingsInviteAgents'
 import { SettingsAssignmentRules } from './settings/SettingsAssignmentRules'
 import { SettingsTeams } from './settings/SettingsTeams'
 import { SettingsCategories } from './settings/SettingsCategories'
 import { SettingsCannedResponses } from './settings/SettingsCannedResponses'
-import { SettingsTelephony } from './settings/SettingsTelephony'
-import { SettingsFormLayouts } from './settings/SettingsFormLayouts'
-import { SettingsCustomActions } from './settings/SettingsCustomActions'
 
 interface Tab {
   key: string
@@ -42,7 +33,6 @@ interface Tab {
 
 const TABS: Tab[] = [
   { key: 'general', label: 'Geral', icon: Cog, group: 'Conta', component: SettingsGeneral },
-  { key: 'email', label: 'E-mail', icon: Mail, group: 'Conta', component: SettingsEmail },
 
   { key: 'sla', label: 'Políticas de SLA', icon: Timer, group: 'Operação', component: SettingsSLA },
   {
@@ -75,29 +65,6 @@ const TABS: Tab[] = [
     icon: MessageSquareQuote,
     group: 'Domínio',
     component: SettingsCannedResponses,
-  },
-
-  {
-    key: 'layouts',
-    label: 'Layouts de Formulário',
-    icon: LayoutTemplate,
-    group: 'Customização',
-    component: SettingsFormLayouts,
-  },
-  {
-    key: 'actions',
-    label: 'Ações Customizadas',
-    icon: Sparkles,
-    group: 'Customização',
-    component: SettingsCustomActions,
-  },
-
-  {
-    key: 'telephony',
-    label: 'Telefonia',
-    icon: Phone,
-    group: 'Integrações',
-    component: SettingsTelephony,
   },
 ]
 

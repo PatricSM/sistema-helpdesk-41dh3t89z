@@ -7,7 +7,6 @@ import {
   BookOpen,
   Building2,
   Contact2,
-  Phone,
   Users,
   ArrowLeftFromLine,
   ArrowRightFromLine,
@@ -37,7 +36,6 @@ const agentItems: NavItem[] = [
   { label: 'Base de Conhecimento', icon: BookOpen, to: '/knowledge-base' },
   { label: 'Clientes', icon: Building2, to: '/customers' },
   { label: 'Contatos', icon: Contact2, to: '/contacts' },
-  { label: 'Registros de Chamada', icon: Phone, to: '/call-logs' },
 ]
 
 const customerItems: NavItem[] = [

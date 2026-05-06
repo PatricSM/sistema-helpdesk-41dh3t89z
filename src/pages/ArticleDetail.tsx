@@ -80,11 +80,10 @@ export default function ArticleDetail() {
           </div>
         </div>
 
-        <div className="prose prose-slate max-w-none text-sm leading-relaxed pt-4 pb-8 border-b">
-          {article.content.split('\n').map((p, i) => (
-            <p key={i}>{p}</p>
-          ))}
-        </div>
+        <div
+          className="prose prose-slate max-w-none text-sm leading-relaxed pt-4 pb-8 border-b"
+          dangerouslySetInnerHTML={{ __html: article.content }}
+        />
 
         <div className="flex items-center justify-between pt-6">
           <span className="text-sm font-medium text-gray-700">Este artigo foi útil?</span>

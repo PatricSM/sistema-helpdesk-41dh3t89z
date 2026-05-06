@@ -93,10 +93,50 @@ function addMinutesIso(dateInput, minutes) {
   return d.toISOString()
 }
 
+/**
+ * Round-robin de membros de um time: escolhe quem tem menos
+ * chamados abertos atribuídos. Retorna user id ou null.
+ */
+function pickTeamMemberRoundRobin(app, teamId) {
+  try {
+    const members = app.findRecordsByFilter('team_members', `team = "${teamId}"`, '', 100, 0)
+    if (members.length === 0) return null
+
+    let bestUserId = null
+    let bestCount = Infinity
+    for (const m of members) {
+      const userId = m.get('user')
+      if (!userId) continue
+      let count = 0
+      try {
+        const list = app.findRecordsByFilter(
+          'tickets',
+          `assignee = "${userId}" && (status = "open" || status = "in_progress")`,
+          '',
+          1000,
+          0,
+        )
+        count = list.length
+      } catch (_) {
+        count = 0
+      }
+      if (count < bestCount) {
+        bestCount = count
+        bestUserId = userId
+      }
+    }
+    return bestUserId
+  } catch (err) {
+    console.error('pickTeamMemberRoundRobin failed:', err)
+    return null
+  }
+}
+
 module.exports = {
   createNotification,
   getSetting,
   findMatchingAssignmentRule,
   findSlaPolicyForPriority,
   addMinutesIso,
+  pickTeamMemberRoundRobin,
 }
