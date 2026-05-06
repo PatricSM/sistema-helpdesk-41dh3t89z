@@ -4,6 +4,7 @@ export interface CategoryRecord {
   id: string
   name: string
   description?: string
+  color?: string
   created: string
   updated: string
 }

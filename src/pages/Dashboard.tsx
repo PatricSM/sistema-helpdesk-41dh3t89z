@@ -1,124 +1,121 @@
-import { useEffect, useState } from 'react'
-import { getTickets } from '@/services/tickets'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Ticket, Clock, CheckCircle, Search } from 'lucide-react'
-import { useAuth } from '@/hooks/use-auth'
+import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { Button } from '@/components/ui/button'
+import { Inbox, Clock, CheckCircle2, AlertTriangle, ArrowRight } from 'lucide-react'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { TicketCard } from '@/components/TicketCard'
+import { TicketDialog } from '@/components/TicketDialog'
+import { getTickets, TicketRecord } from '@/services/tickets'
+import { getCategories, CategoryRecord } from '@/services/categories'
+import { useRealtime } from '@/hooks/use-realtime'
+
+interface Kpi {
+  label: string
+  value: number
+  icon: React.ComponentType<{ className?: string }>
+  className: string
+}
 
 export default function Dashboard() {
-  const { user } = useAuth()
-  const [stats, setStats] = useState({ open: 0, inProgress: 0, resolved: 0 })
-  const [recent, setRecent] = useState<any[]>([])
+  const [tickets, setTickets] = useState<TicketRecord[]>([])
+  const [categories, setCategories] = useState<CategoryRecord[]>([])
+
+  const loadData = async () => {
+    try {
+      const [items, cats] = await Promise.all([getTickets(), getCategories()])
+      setTickets(items)
+      setCategories(cats)
+    } catch {
+      // handled
+    }
+  }
 
   useEffect(() => {
-    const fetchStats = async () => {
-      const filter = user?.role === 'client' ? `requester = "${user.id}"` : ''
-      const res = await getTickets(filter)
+    loadData()
+  }, [])
 
-      const open = res.items.filter((t) => t.status === 'open').length
-      const inProgress = res.items.filter((t) => t.status === 'in_progress').length
-      const resolved = res.items.filter((t) => t.status === 'resolved').length
+  useRealtime('tickets', () => {
+    loadData()
+  })
 
-      setStats({ open, inProgress, resolved })
-      setRecent(res.items.slice(0, 5))
-    }
-    fetchStats()
-  }, [user])
+  const kpis: Kpi[] = useMemo(() => {
+    const open = tickets.filter((t) => t.status === 'open').length
+    const inProgress = tickets.filter((t) => t.status === 'in_progress').length
+    const resolved = tickets.filter((t) => t.status === 'resolved').length
+    const urgent = tickets.filter((t) => t.priority === 'urgent' && t.status !== 'closed').length
+    return [
+      { label: 'Abertos', value: open, icon: Inbox, className: 'text-blue-600 bg-blue-50' },
+      {
+        label: 'Em andamento',
+        value: inProgress,
+        icon: Clock,
+        className: 'text-amber-600 bg-amber-50',
+      },
+      {
+        label: 'Resolvidos',
+        value: resolved,
+        icon: CheckCircle2,
+        className: 'text-emerald-600 bg-emerald-50',
+      },
+      {
+        label: 'Urgentes',
+        value: urgent,
+        icon: AlertTriangle,
+        className: 'text-rose-600 bg-rose-50',
+      },
+    ]
+  }, [tickets])
+
+  const recent = tickets.slice(0, 6)
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between">
+    <div className="space-y-6 animate-fade-in">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Painel de Controle</h1>
-          <p className="text-muted-foreground">Bem-vindo de volta, {user?.name}</p>
+          <h1 className="text-3xl font-bold tracking-tight">Painel</h1>
+          <p className="text-muted-foreground mt-1">Visão geral dos seus chamados.</p>
         </div>
-        <div className="mt-4 md:mt-0 flex gap-2">
-          <Button variant="outline" asChild>
-            <Link to="/knowledge-base">
-              <Search className="mr-2 h-4 w-4" /> Buscar Ajuda
-            </Link>
-          </Button>
-          <Button asChild>
-            <Link to="/tickets/new">
-              <Ticket className="mr-2 h-4 w-4" /> Novo Chamado
-            </Link>
-          </Button>
-        </div>
+        <TicketDialog categories={categories} />
       </div>
 
-      <div className="grid gap-4 md:grid-cols-3">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Chamados Abertos</CardTitle>
-            <Ticket className="h-4 w-4 text-blue-500" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.open}</div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Em Andamento</CardTitle>
-            <Clock className="h-4 w-4 text-amber-500" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.inProgress}</div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Resolvidos</CardTitle>
-            <CheckCircle className="h-4 w-4 text-green-500" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.resolved}</div>
-          </CardContent>
-        </Card>
+      <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
+        {kpis.map((k) => (
+          <Card key={k.label}>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium text-muted-foreground">{k.label}</CardTitle>
+              <div className={`p-2 rounded-lg ${k.className}`}>
+                <k.icon className="h-4 w-4" />
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="text-3xl font-bold">{k.value}</div>
+            </CardContent>
+          </Card>
+        ))}
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Chamados Recentes</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            {recent.length === 0 ? (
-              <p className="text-sm text-muted-foreground">Nenhum chamado recente.</p>
-            ) : (
-              recent.map((t) => (
-                <div
-                  key={t.id}
-                  className="flex items-center justify-between border-b pb-4 last:border-0 last:pb-0"
-                >
-                  <div>
-                    <Link to={`/tickets/${t.id}`} className="font-medium hover:underline">
-                      {t.title}
-                    </Link>
-                    <div className="text-xs text-muted-foreground mt-1">
-                      {t.expand?.category?.name} • Criado em{' '}
-                      {new Date(t.created).toLocaleDateString('pt-BR')}
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span
-                      className={`text-xs px-2 py-1 rounded-full font-medium ${t.status === 'open' ? 'bg-blue-100 text-blue-800' : t.status === 'in_progress' ? 'bg-amber-100 text-amber-800' : t.status === 'resolved' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}`}
-                    >
-                      {t.status === 'open'
-                        ? 'Aberto'
-                        : t.status === 'in_progress'
-                          ? 'Em andamento'
-                          : t.status === 'resolved'
-                            ? 'Resolvido'
-                            : 'Fechado'}
-                    </span>
-                  </div>
-                </div>
-              ))
-            )}
+      <div>
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-xl font-semibold tracking-tight">Chamados recentes</h2>
+          <Link
+            to="/tickets"
+            className="text-sm text-primary inline-flex items-center gap-1 hover:gap-2 transition-all"
+          >
+            Ver todos <ArrowRight className="h-4 w-4" />
+          </Link>
+        </div>
+        {recent.length > 0 ? (
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {recent.map((t) => (
+              <TicketCard key={t.id} ticket={t} />
+            ))}
           </div>
-        </CardContent>
-      </Card>
+        ) : (
+          <div className="py-12 text-center text-muted-foreground border rounded-lg border-dashed bg-secondary/10">
+            Nenhum chamado ainda. Clique em <span className="font-medium">Novo Chamado</span> para
+            começar.
+          </div>
+        )}
+      </div>
     </div>
   )
 }

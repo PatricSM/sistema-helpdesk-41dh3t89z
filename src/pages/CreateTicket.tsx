@@ -1,12 +1,11 @@
-import { useState, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { getCategories } from '@/services/categories'
-import { createTicket } from '@/services/tickets'
-import { useAuth } from '@/hooks/use-auth'
+import { useEffect, useState } from 'react'
+import { Link, useNavigate } from 'react-router-dom'
+import { ArrowLeft } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { Card, CardContent } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
-import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
+import { Textarea } from '@/components/ui/textarea'
 import {
   Select,
   SelectContent,
@@ -14,107 +13,152 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { useToast } from '@/hooks/use-toast'
+import { useAuth } from '@/hooks/use-auth'
+import { createTicket, TicketPriority } from '@/services/tickets'
+import { getCategories, CategoryRecord } from '@/services/categories'
+import { extractFieldErrors, getErrorMessage } from '@/lib/pocketbase/errors'
+
+const PRIORITY_OPTIONS: { value: TicketPriority; label: string }[] = [
+  { value: 'low', label: 'Baixa' },
+  { value: 'medium', label: 'Média' },
+  { value: 'high', label: 'Alta' },
+  { value: 'urgent', label: 'Urgente' },
+]
 
 export default function CreateTicket() {
-  const [categories, setCategories] = useState<any[]>([])
-  const [title, setTitle] = useState('')
-  const [description, setDescription] = useState('')
-  const [category, setCategory] = useState('')
-  const [priority, setPriority] = useState('medium')
-  const { user } = useAuth()
   const navigate = useNavigate()
+  const { user } = useAuth()
   const { toast } = useToast()
 
+  const [categories, setCategories] = useState<CategoryRecord[]>([])
+  const [title, setTitle] = useState('')
+  const [description, setDescription] = useState('')
+  const [priority, setPriority] = useState<TicketPriority>('medium')
+  const [category, setCategory] = useState<string>('')
+  const [errors, setErrors] = useState<Record<string, string>>({})
+  const [saving, setSaving] = useState(false)
+
   useEffect(() => {
-    getCategories().then(setCategories)
+    getCategories()
+      .then((cats) => {
+        setCategories(cats)
+        if (cats[0]) setCategory(cats[0].id)
+      })
+      .catch(() => {})
   }, [])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!category)
-      return toast({
-        title: 'Atenção',
-        description: 'Selecione uma categoria',
-        variant: 'destructive',
-      })
+    setErrors({})
+    setSaving(true)
     try {
-      const ticket = await createTicket({
+      const rec = await createTicket({
         title,
         description,
-        category,
-        priority,
         status: 'open',
-        requester: user.id,
+        priority,
+        category: category || undefined,
+        requester: user?.id,
       })
-      toast({ title: 'Sucesso', description: 'Chamado criado com sucesso.' })
-      navigate(`/tickets/${ticket.id}`)
+      toast({ title: 'Chamado aberto!' })
+      navigate(`/tickets/${rec.id}`)
     } catch (err) {
-      toast({ title: 'Erro', description: 'Falha ao criar o chamado.', variant: 'destructive' })
+      const f = extractFieldErrors(err)
+      if (Object.keys(f).length > 0) setErrors(f)
+      else
+        toast({
+          variant: 'destructive',
+          title: 'Erro ao criar chamado',
+          description: getErrorMessage(err),
+        })
+    } finally {
+      setSaving(false)
     }
   }
 
   return (
-    <div className="max-w-2xl mx-auto w-full space-y-4">
-      <h1 className="text-2xl font-bold">Abrir Novo Chamado</h1>
+    <div className="space-y-6 animate-fade-in max-w-3xl">
+      <div className="flex items-center gap-3">
+        <Button asChild variant="ghost" size="icon">
+          <Link to="/tickets">
+            <ArrowLeft className="h-5 w-5" />
+          </Link>
+        </Button>
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight">Novo Chamado</h1>
+          <p className="text-xs text-muted-foreground">Abra um novo chamado de suporte</p>
+        </div>
+      </div>
+
       <Card>
         <CardContent className="pt-6">
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="title">Título</Label>
+          <form onSubmit={handleSubmit} className="space-y-5">
+            <div className="grid gap-2">
+              <Label htmlFor="title">Título *</Label>
               <Input
                 id="title"
-                required
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
-                placeholder="Ex: Erro ao acessar o sistema"
+                placeholder="Resumo do problema"
+                required
               />
+              {errors.title && <span className="text-xs text-destructive">{errors.title}</span>}
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="category">Categoria</Label>
-              <Select value={category} onValueChange={setCategory}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Selecione..." />
-                </SelectTrigger>
-                <SelectContent>
-                  {categories.map((c) => (
-                    <SelectItem key={c.id} value={c.id}>
-                      {c.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="priority">Prioridade</Label>
-              <Select value={priority} onValueChange={setPriority}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="low">Baixa</SelectItem>
-                  <SelectItem value="medium">Média</SelectItem>
-                  <SelectItem value="high">Alta</SelectItem>
-                  <SelectItem value="urgent">Urgente</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="description">Descrição detalhada</Label>
+            <div className="grid gap-2">
+              <Label htmlFor="description">Descrição *</Label>
               <Textarea
                 id="description"
-                required
-                rows={5}
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
+                placeholder="Descreva o problema em detalhes..."
+                rows={6}
+                className="resize-none"
+                required
               />
+              {errors.description && (
+                <span className="text-xs text-destructive">{errors.description}</span>
+              )}
             </div>
-            <div className="flex justify-end gap-2 pt-4">
-              <Button type="button" variant="outline" onClick={() => navigate('/tickets')}>
-                Cancelar
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="grid gap-2">
+                <Label>Categoria *</Label>
+                <Select value={category} onValueChange={setCategory}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecione" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {categories.map((c) => (
+                      <SelectItem key={c.id} value={c.id}>
+                        {c.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                {errors.category && (
+                  <span className="text-xs text-destructive">{errors.category}</span>
+                )}
+              </div>
+              <div className="grid gap-2">
+                <Label>Prioridade</Label>
+                <Select value={priority} onValueChange={(v) => setPriority(v as TicketPriority)}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {PRIORITY_OPTIONS.map((p) => (
+                      <SelectItem key={p.value} value={p.value}>
+                        {p.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            <div className="flex justify-end pt-2">
+              <Button type="submit" disabled={saving}>
+                {saving ? 'Abrindo…' : 'Abrir Chamado'}
               </Button>
-              <Button type="submit">Enviar Chamado</Button>
             </div>
           </form>
         </CardContent>
